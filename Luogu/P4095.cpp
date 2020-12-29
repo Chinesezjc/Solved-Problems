@@ -1,0 +1,62 @@
+#include<cstdio>
+#include<iostream>
+using namespace std;
+int a[1002][1002],b[1002][1002],c[1002][3],n,x,y,i,j,k,now;
+int main()
+{
+	scanf("%d",&n);
+	for(i=1;i<=n;++i)
+	{
+		scanf("%d%d%d",&c[i][0],&c[i][1],&c[i][2]);
+	}
+	for(i=1;i<=n;++i)
+	{
+		for(k=1000;k>=0;--k)
+		{
+			a[i][k]=a[i-1][k];
+		}
+		for(j=1,now=c[i][2]-1;now>0;j<<=1,now-=j)
+		{
+			for(k=1000;k>=j*c[i][0];--k)
+			{
+				a[i][k]=max(a[i][k],a[i][k-j*c[i][0]]+j*c[i][1]);
+			}
+		}
+		now+=j;
+		for(k=1000;k>=now*c[i][0];--k)
+		{
+			a[i][k]=max(a[i][k],a[i][k-now*c[i][0]]+now*c[i][1]);
+		}
+	}
+	for(i=n;i>=1;--i)
+	{
+		for(k=1000;k>=0;--k)
+		{
+			b[i][k]=b[i+1][k];
+		}
+		for(j=1,now=c[i][2]-1;now>0;j<<=1,now-=j)
+		{
+			for(k=1000;k>=j*c[i][0];--k)
+			{
+				b[i][k]=max(b[i][k],b[i][k-j*c[i][0]]+j*c[i][1]);
+			}
+		}
+		now+=j;
+		for(k=1000;k>=now*c[i][0];--k)
+		{
+			b[i][k]=max(b[i][k],b[i][k-now*c[i][0]]+now*c[i][1]);
+		}
+	}
+	scanf("%d",&now);
+	while(now--)
+	{
+		scanf("%d%d",&x,&y);
+		++x;
+		k=0;
+		for(i=0;i<=y;++i)
+		{
+			k=max(a[x-1][y-i]+b[x+1][i],k);
+		}
+		printf("%d\n",k);
+	}
+}
