@@ -26,7 +26,7 @@ signed main()
 a:
     system("mkdata.exe > data.in");
     int t = clock();
-    int back = system("P5787.exe < data.in > data.out");
+    int back = system("P4003.exe < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;

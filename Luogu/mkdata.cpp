@@ -21,25 +21,17 @@ using namespace std;
 #define int long long
 unsigned int seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
-int k = 100000, n = 100000, m = 200000;
+int n = 3, m = 3;
 signed main()
 {
     ios::sync_with_stdio(false);
-    cout << n << ' ' << m << ' ' << k << endl;
-    for (int i = 1; i <= m; ++i)
+    cout << n << ' ' << m << endl;
+    for (int i = 1; i <= n; ++i)
     {
-        int A = Rand() % n + 1, B = Rand() % n + 1, C = Rand() % k, D = Rand() % k + 1;
-        while (A == B)
+        for (int j = 1; j <= m; ++j)
         {
-            A = Rand() % n + 1;
-            B = Rand() % n + 1;
+            cout << (Rand() & 15) << " \n"[j == m];
         }
-        while (C >= D)
-        {
-            C = Rand() % k;
-            D = Rand() % k + 1;
-        }
-        cout << A << ' ' << B << ' ' << C << ' ' << D << endl;
     }
     return 0;
 }

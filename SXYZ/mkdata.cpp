@@ -15,14 +15,10 @@
 #include <set>
 #include <time.h>
 #include <windows.h>
-#define int long long
-#define pi 3.14159265358979323
-#define INF 0x3fffffffffffffff
-using namespace std;
-#undef int
 #include <random>
 #include <chrono>
 #define int long long
+using namespace std;
 unsigned int seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
 const int MOD = 1000000007;
