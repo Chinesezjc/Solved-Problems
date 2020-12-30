@@ -68,7 +68,7 @@ signed main()
             ++cnt;
         }
     }
-    if (cnt == n)
+    if (cnt != n)
     {
         cout << "No Answer" << endl;
         return 0;
@@ -76,9 +76,13 @@ signed main()
     for (int i = 0; i < n; ++i)
     {
         ans[match[i]] = i;
+#ifdef debug
         cout << match[i] << ' ';
+#endif
     }
+#ifdef debug
     cout << endl;
+#endif
     for (int i = 0; i < n; ++i)
     {
         cout << ans[i] << ' ';
