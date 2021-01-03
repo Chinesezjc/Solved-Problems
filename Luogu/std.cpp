@@ -1,114 +1,86 @@
+// luogu-judger-enable-o2
 #include <iostream>
-#include <cstring>
 #include <cstdio>
-#define MX 20001
-#define S 0
-#define T ((n << 1) + 1)
-#define oo 12312312
+#include <cmath>
 using namespace std;
-typedef struct edge_t
+const int MAXN = 1e7 + 10;
+inline int read()
 {
-	int u, v, c;
-} edge;
-edge e[MX];
-int fst[MX], nxt[MX], lnum;
-int n, m;
-void addeg(int nu, int nv, int nc)
-{
-	nxt[++lnum] = fst[nu];
-	fst[nu] = lnum;
-	e[lnum] = (edge){nu, nv, nc};
-}
-void input()
-{
-	int a, b;
-	scanf("%d%d", &n, &m);
-	for (int i = 1; i <= m; i++)
+	char c = getchar();
+	int x = 0, f = 1;
+	while (c < '0' || c > '9')
 	{
-		scanf("%d%d", &a, &b);
-		addeg(a, n + b, 1);
-		addeg(n + b, a, 0);
+		if (c == '-')
+			f = -1;
+		c = getchar();
 	}
-	for (int i = 1; i <= n; i++)
-		addeg(S, i, 1), addeg(i, S, 0);
-	for (int i = n + 1; i <= n << 1; i++)
-		addeg(i, T, 1), addeg(T, i, 0);
-}
-void init()
-{
-	memset(fst, 0xff, sizeof(fst));
-	lnum = -1;
-}
-int dep[MX], q[MX];
-int bfs(int frm, int to)
-{
-	int x, y, h = 0, t = 1;
-	memset(dep, 0xff, sizeof(dep));
-	q[++h] = frm;
-	dep[frm] = 0;
-	while (h >= t)
+	while (c >= '0' && c <= '9')
 	{
-		x = q[t++];
-		for (int i = fst[x]; i != -1; i = nxt[i])
+		x = x * 10 + c - '0';
+		c = getchar();
+	}
+	return x * f;
+}
+const double Pi = acos(-1.0);
+struct complex
+{
+	double x, y;
+	complex(double xx = 0, double yy = 0) { x = xx, y = yy; }
+} a[MAXN], b[MAXN];
+complex operator+(complex a, complex b) { return complex(a.x + b.x, a.y + b.y); }
+complex operator-(complex a, complex b) { return complex(a.x - b.x, a.y - b.y); }
+complex operator*(complex a, complex b) { return complex(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); } //不懂的看复数的运算那部分
+int N, M;
+int l, r[MAXN];
+int limit = 1;
+void fast_fast_tle(complex *A, int type)
+{
+	for (int i = 0; i < limit; i++)
+		if (i < r[i])
+			swap(A[i], A[r[i]]);			  //求出要迭代的序列
+	for (int mid = 1; mid < limit; mid <<= 1) //待合并区间的中点
+	{
+		complex Wn(cos(Pi / mid), type * sin(Pi / mid)); //单位根
+		for (int R = mid << 1, j = 0; j < limit; j += R) //R是区间的右端点，j表示前已经到哪个位置了
 		{
-			y = e[i].v;
-			if (e[i].c && dep[y] == -1)
+			complex w(1, 0);						  //幂
+			for (int k = 0; k < mid; k++, w = w * Wn) //枚举左半部分
 			{
-				dep[y] = dep[x] + 1;
-				q[++h] = y;
+				complex x = A[j + k], y = w * A[j + mid + k]; //蝴蝶效应
+				A[j + k] = x + y;
+				A[j + mid + k] = x - y;
 			}
 		}
 	}
-	return (dep[to] >= 0);
-}
-int dinic(int to, int x, int mn)
-{
-	if (x == to)
-		return mn;
-	int a, now = 0, y;
-	for (int i = fst[x]; i != -1; i = nxt[i])
-	{
-		y = e[i].v;
-		if (e[i].c && dep[y] == dep[x] + 1)
-		{
-			a = dinic(to, y, min(mn - now, e[i].c));
-			now += a;
-			e[i].c -= a;
-			e[i ^ 1].c += a;
-			if (now == mn)
-				break;
-		}
-	}
-	return now;
-}
-void output(int x)
-{
-	printf("%d ", x);
-	for (int i = fst[x]; i != -1; i = nxt[i])
-		if (e[i].c == 0 && e[i].v > n)
-			output(e[i].v - n);
-}
-int fa[MX];
-int findfa(int x) { return x == fa[x] ? x : fa[x] = findfa(fa[x]); }
-void work()
-{
-	int tot = 0;
-	while (bfs(S, T))
-		tot += dinic(T, S, +oo);
-	for (int i = 1; i <= n; i++)
-		fa[i] = i;
-	for (int i = 0; i <= lnum; i++)
-		if (e[i].u >= 1 && e[i].u <= n && e[i].v > n && e[i].v < T && e[i].c == 0)
-			fa[findfa(e[i].v - n)] = findfa(e[i].u);
-	for (int i = 1; i <= n; i++)
-		if (findfa(i) == i)
-			output(i), putchar('\n');
-	printf("%d\n", n - tot);
 }
 int main()
 {
-	init();
-	input();
-	work();
+	int N = read(), M = read();
+	for (int i = 0; i <= N; i++)
+		a[i].x = read();
+	for (int i = 0; i <= M; i++)
+		b[i].x = read();
+	while (limit <= N + M)
+		limit <<= 1, l++;
+	for (int i = 0; i < limit; i++)
+		r[i] = (r[i >> 1] >> 1) | ((i & 1) << (l - 1));
+	// 在原序列中 i 与 i/2 的关系是 ： i可以看做是i/2的二进制上的每一位左移一位得来
+	// 那么在反转后的数组中就需要右移一位，同时特殊处理一下复数
+	fast_fast_tle(a, 1);
+	fast_fast_tle(b, 1);
+	for (int i = 0; i <= N + M; i++)
+		printf("(%lf,%lf)", a[i].x, a[i].y);
+	puts("");
+	for (int i = 0; i <= N + M; i++)
+		printf("(%lf,%lf)", b[i].x, b[i].y);
+	puts("");
+	for (int i = 0; i <= limit; i++)
+		a[i] = a[i] * b[i];
+	fast_fast_tle(a, -1);
+	for (int i = 0; i <= N + M; i++)
+		printf("(%lf,%lf)", a[i].x, a[i].y);
+	puts("");
+	for (int i = 0; i <= N + M; i++)
+		printf("%d ", (int)(a[i].x / limit + 0.5));
 	return 0;
 }
