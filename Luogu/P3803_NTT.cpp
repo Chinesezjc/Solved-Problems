@@ -84,9 +84,11 @@ void INTT(int TMP[], const int len)
         rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << lg >> 1);
         tmp[rev[i]] = TMP[i];
     }
+#ifdef debug
     for (int i = 0; i < len; ++i)
         cout << tmp[i] << ' ';
     cout << endl;
+#endif
     for (int Len = 1; Len <= lg; ++Len)
     {
         for (int j = 0; j < len; j += 1 << Len)
@@ -176,12 +178,14 @@ signed main()
     {
         C[i] = mul(A[i], B[i], MOD);
     }
+#ifdef debug
     for (int i = 0; i < N; ++i)
         cout << A[i] << ' ';
     cout << endl;
     for (int i = 0; i < N; ++i)
         cout << B[i] << ' ';
     cout << endl;
+#endif
     INTT(C, N);
     for (int i = 0; i < N; ++i)
     {
