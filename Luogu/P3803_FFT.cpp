@@ -144,7 +144,7 @@ signed main()
     }
     for (int Len = 2; Len <= len; Len *= 2)
     {
-        complex<double> Y1, Y2, w1(-cos(PI * 2 / Len), -sin(PI * 2 / Len));
+        complex<double> Y1, Y2, w1(cos(PI * 2 / Len), -sin(PI * 2 / Len));
         for (int i = 0; i < len; i += Len)
         {
             complex<double> w(1, 0);
@@ -165,7 +165,11 @@ signed main()
 #endif
     for (int i = 0; i < C.size(); ++i)
     {
-        cout << (int)(C[i].x / C.size() + 0.5) << ' ';
+        C[i] *= {1.0 / C.size(), 0};
+    }
+    for (int i = 0; i < n + m - 1; ++i)
+    {
+        cout << (int)(C[i].x + 0.5) << ' ';
     }
     cout << endl;
     return 0;

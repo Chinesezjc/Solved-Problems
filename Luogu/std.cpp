@@ -68,16 +68,16 @@ int main()
 	// 那么在反转后的数组中就需要右移一位，同时特殊处理一下复数
 	fast_fast_tle(a, 1);
 	fast_fast_tle(b, 1);
-	for (int i = 0; i <= N + M; i++)
+	for (int i = 0; i < limit; i++)
 		printf("(%lf,%lf)", a[i].x, a[i].y);
 	puts("");
-	for (int i = 0; i <= N + M; i++)
+	for (int i = 0; i < limit; i++)
 		printf("(%lf,%lf)", b[i].x, b[i].y);
 	puts("");
-	for (int i = 0; i <= limit; i++)
+	for (int i = 0; i < limit; i++)
 		a[i] = a[i] * b[i];
 	fast_fast_tle(a, -1);
-	for (int i = 0; i <= N + M; i++)
+	for (int i = 0; i < limit; i++)
 		printf("(%lf,%lf)", a[i].x, a[i].y);
 	puts("");
 	for (int i = 0; i <= N + M; i++)
