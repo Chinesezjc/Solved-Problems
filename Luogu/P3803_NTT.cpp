@@ -116,7 +116,7 @@ signed main()
     {
         C[i] = A[i] * B[i] % MOD;
     }
-    INTT(C);
+    INTT(C) ;
     for (int i = 0; i < n + m - 1; ++i)
     {
         cout << C[i] << ' ';
