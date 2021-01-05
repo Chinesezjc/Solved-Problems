@@ -42,25 +42,24 @@ int power(int A, int B)
 }
 vector<int> A, B, C;
 int n, m, len;
-void NTT(vector<int> &x, int INTT = 0)
+void NTT(vector<int> &x, int INTT = 1)
 {
-    if (INTT)
-    {
-        INTT = +1;
-    }
-    else
-    {
-        INTT = -1;
-    }
     static vector<int> rev;
     if (rev.size() != x.size())
     {
         rev.resize(x.size());
         for (int i = 1; i < rev.size(); ++i)
         {
-            rev[i] = (rev[i >> 1] << 1) | (i & 1) * x.size() / 2;
+            rev[i] = (rev[i >> 1] >> 1) | (i & 1) * x.size() / 2;
         }
     }
+#ifdef debug
+    for (int i = 0; i < x.size(); ++i)
+    {
+        cout << bitset<3>(rev[i]) << ' ';
+    }
+    cout << endl;
+#endif
     for (int i = 0; i < x.size(); ++i)
     {
         if (rev[i] < i)
@@ -70,10 +69,13 @@ void NTT(vector<int> &x, int INTT = 0)
     }
     for (int i = 1; i < x.size(); i <<= 1)
     {
-        int w1 = power(W, (MOD - 1) - INTT * (MOD - 1) * i * 2 / x.size());
+        int w1 = power(W, (MOD - 1) + INTT * (MOD - 1) / i / 2);
+#ifdef debug
+        cout << w1 << endl;
+#endif
         for (int j = 0; j < x.size(); j += i << 1)
         {
-            for (int k = 0, w = 1; k < i; ++k, w *= w1)
+            for (int k = 0, w = 1; k < i; ++k, w = w * w1 % MOD)
             {
                 int Y1 = x[j | k], Y2 = w * x[i | j | k] % MOD;
                 x[j | k] = (Y1 + Y2 + MOD) % MOD;
@@ -81,7 +83,7 @@ void NTT(vector<int> &x, int INTT = 0)
             }
         }
     }
-    if (~INTT)
+    if (INTT == -1)
     {
         int w = power(x.size(), MOD - 2);
         for (int i = 0; i < x.size(); ++i)
@@ -92,12 +94,14 @@ void NTT(vector<int> &x, int INTT = 0)
 }
 void INTT(vector<int> &x)
 {
-    NTT(x, 1);
+    NTT(x, -1);
 }
 signed main()
 {
     ios::sync_with_stdio(false);
     cin >> n >> m;
+    ++n;
+    ++m;
     len = 1 << (int)ceil(log2(n + m));
     A.resize(len);
     B.resize(len);
@@ -112,6 +116,18 @@ signed main()
     }
     NTT(A);
     NTT(B);
+#ifdef debug
+    for (int i = 0; i < A.size(); ++i)
+    {
+        cout << A[i] << ' ';
+    }
+    cout << endl;
+    for (int i = 0; i < B.size(); ++i)
+    {
+        cout << B[i] << ' ';
+    }
+    cout << endl;
+#endif
     for (int i = 0; i < C.size(); ++i)
     {
         C[i] = A[i] * B[i] % MOD;
