@@ -1,5 +1,6 @@
 //This Code was made by Chinese_zjc_.
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <algorithm>
 #include <vector>
@@ -7,190 +8,118 @@
 #include <cmath>
 #include <queue>
 #include <stack>
+#include <list>
 #include <string>
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
+#include <cctype>
 #include <map>
 #include <set>
-#include <time.h>
-// #include<windows.h>
+#include <ctime>
+// #define debug
 #define int long long
-#define INF 0x3fffffffffffffff
+#define double long double
 using namespace std;
-const long double PI = acos(-1);
-const long double eps = 0.000000000001;
+const double PI = acos(-1);
+const double eps = 0.0000000001;
+const int INF = 0x3fffffffffffffff;
 const int MOD = 998244353;
 const int W = 3;
-int w[1 << 23], tmp[1 << 23], rev[1 << 23];
-int mul(int A, int B, int C)
+int power(int A, int B)
 {
-    int res = A * B - (int)((long double)A * B / C + 0.5) * C;
-    return res < 0 ? res + C : res;
-}
-int power(int A, int B, int C)
-{
-    int tmp = 1;
+    int res = 1;
     while (B)
     {
         if (B & 1)
         {
-            tmp = mul(tmp, A, C);
+            res = res * A % MOD;
         }
-        A = mul(A, A, C);
+        A = A * A % MOD;
         B >>= 1;
     }
-    return tmp;
+    return res;
 }
-int n, m, N, M;
-void NTT(int TMP[], const int len)
+vector<int> A, B, C;
+int n, m, len;
+void NTT(vector<int> &x, int INTT = 0)
 {
-    int lg = 0;
-    while (1 << lg < len)
+    if (INTT)
     {
-        ++lg;
+        INTT = +1;
     }
-    for (int i = 0; i < len; ++i)
+    else
     {
-        rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << lg >> 1);
-        tmp[rev[i]] = TMP[i];
+        INTT = -1;
     }
-    for (int Len = 1; Len <= lg; ++Len)
+    static vector<int> rev;
+    if (rev.size() != x.size())
     {
-        for (int j = 0; j < len; j += 1 << Len)
+        rev.resize(x.size());
+        for (int i = 1; i < rev.size(); ++i)
         {
-            for (int k = 0; k < (1 << Len >> 1); ++k)
+            rev[i] = (rev[i >> 1] << 1) | (i & 1) * x.size() / 2;
+        }
+    }
+    for (int i = 0; i < x.size(); ++i)
+    {
+        if (rev[i] < i)
+        {
+            swap(x[rev[i]], x[i]);
+        }
+    }
+    for (int i = 1; i < x.size(); i <<= 1)
+    {
+        int w1 = power(W, (MOD - 1) - INTT * (MOD - 1) * i * 2 / x.size());
+        for (int j = 0; j < x.size(); j += i << 1)
+        {
+            for (int k = 0, w = 1; k < i; ++k, w *= w1)
             {
-                int Y1 = tmp[j | k], Y2 = tmp[j | (1 << Len >> 1) | k];
-                tmp[j | k] = (Y1 + mul(Y2, w[N / (1 << Len) * k], MOD)) % MOD;
-                tmp[j | (1 << Len >> 1) | k] = (Y1 + mul(Y2, w[N / (1 << Len) * (k | (1 << Len >> 1))], MOD)) % MOD;
+                int Y1 = x[j | k], Y2 = w * x[i | j | k] % MOD;
+                x[j | k] = (Y1 + Y2 + MOD) % MOD;
+                x[i | j | k] = (Y1 - Y2 + MOD) % MOD;
             }
         }
     }
-    for (int i = 0; i < len; ++i)
+    if (~INTT)
     {
-        TMP[i] = tmp[i];
-    }
-}
-void INTT(int TMP[], const int len)
-{
-    int lg = 0;
-    while (1 << lg < len)
-    {
-        ++lg;
-    }
-    for (int i = 0; i < len; ++i)
-    {
-        rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << lg >> 1);
-        tmp[rev[i]] = TMP[i];
-    }
-#ifdef debug
-    for (int i = 0; i < len; ++i)
-        cout << tmp[i] << ' ';
-    cout << endl;
-#endif
-    for (int Len = 1; Len <= lg; ++Len)
-    {
-        for (int j = 0; j < len; j += 1 << Len)
+        int w = power(x.size(), MOD - 2);
+        for (int i = 0; i < x.size(); ++i)
         {
-            for (int k = 0; k < (1 << Len >> 1); ++k)
-            {
-                int Y1 = tmp[j | k], Y2 = tmp[j | (1 << Len >> 1) | k];
-                tmp[j | k] = (Y1 + mul(Y2, w[N / (1 << Len) * ((1 << Len) - k)], MOD)) % MOD;
-                tmp[j | (1 << Len >> 1) | k] = (Y1 + mul(Y2, w[N / (1 << Len) * ((1 << Len) - (k | (1 << Len >> 1)))], MOD)) % MOD;
-            }
+            x[i] = x[i] * w % MOD;
         }
     }
-    int t = power(len, MOD - 2, MOD);
-    for (int i = 0; i < len; ++i)
-    {
-        TMP[i] = mul(tmp[i], t, MOD);
-    }
 }
-int A[1 << 23], B[1 << 23], C[1 << 23];
-void read(int &tmp)
+void INTT(vector<int> &x)
 {
-    tmp = 0;
-    char c = getchar();
-    while ('0' > c || c > '9')
-    {
-        c = getchar();
-    }
-    while ('0' <= c && c <= '9')
-    {
-        tmp = (tmp << 1) + (tmp << 3) + (c ^ '0');
-        c = getchar();
-    }
-}
-void write(int tmp)
-{
-    if (!tmp)
-    {
-        putchar('0');
-        return;
-    }
-    if (tmp < 0)
-    {
-        tmp = -tmp;
-        putchar('-');
-    }
-    char OUT[21];
-    int CNT = 0;
-    while (tmp)
-    {
-        OUT[++CNT] = tmp % 10 | '0';
-        tmp /= 10;
-    }
-    while (CNT)
-    {
-        putchar(OUT[CNT--]);
-    }
+    NTT(x, 1);
 }
 signed main()
 {
-    read(n);
-    read(m);
-    ++n;
-    ++m;
-    N = 1;
-    while (N < n || N < m)
-    {
-        N <<= 1;
-    }
-    N <<= 1;
-    w[0] = 1;
-    w[1] = power(W, (MOD - 1) / N, MOD);
-    for (int i = 2; i <= N; ++i)
-    {
-        w[i] = mul(w[i - 1], w[1], MOD);
-    }
+    ios::sync_with_stdio(false);
+    cin >> n >> m;
+    len = 1 << (int)ceil(log2(n + m));
+    A.resize(len);
+    B.resize(len);
+    C.resize(len);
     for (int i = 0; i < n; ++i)
     {
-        read(A[i]);
+        cin >> A[i];
     }
     for (int i = 0; i < m; ++i)
     {
-        read(B[i]);
+        cin >> B[i];
     }
-    NTT(A, N);
-    NTT(B, N);
-    for (int i = 0; i < N; ++i)
+    NTT(A);
+    NTT(B);
+    for (int i = 0; i < C.size(); ++i)
     {
-        C[i] = mul(A[i], B[i], MOD);
+        C[i] = A[i] * B[i] % MOD;
     }
-#ifdef debug
-    for (int i = 0; i < N; ++i)
-        cout << A[i] << ' ';
-    cout << endl;
-    for (int i = 0; i < N; ++i)
-        cout << B[i] << ' ';
-    cout << endl;
-#endif
-    INTT(C, N);
-    for (int i = 0; i < N; ++i)
+    INTT(C);
+    for (int i = 0; i < n + m - 1; ++i)
     {
-        write(C[i]);
-        putchar(' ');
+        cout << C[i] << ' ';
     }
     cout << endl;
     return 0;
