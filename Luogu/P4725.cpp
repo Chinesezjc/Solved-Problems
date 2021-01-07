@@ -91,6 +91,104 @@ void INTT(vector<int> &x)
         (x[i] *= inv) %= MOD;
     }
 }
+const vector<int> operator*(const vector<int> &x, const vector<int> &y)
+{
+    vector<int> res(*lower_bound(LOG, LOG + 32, x.size() + y.size())), X(x), Y(y);
+    X.resize(res.size());
+    Y.resize(res.size());
+    NTT(X);
+    NTT(Y);
+    for (int i = 0; i < res.size(); ++i)
+    {
+        res[i] = X[i] * Y[i] % MOD;
+    }
+    INTT(res);
+    return res;
+}
+const vector<int> operator*(const vector<int> &x, const int &y)
+{
+    vector<int> res(x);
+    for (int i = 0; i < res.size(); ++i)
+    {
+        (res[i] *= y) %= MOD;
+    }
+    return res;
+}
+const vector<int> operator+(const vector<int> &x, const int &y)
+{
+    if (x.empty())
+    {
+        return {y};
+    }
+    vector<int> res(x);
+    (res.front() += y) %= MOD;
+    return res;
+}
+const vector<int> operator-(const vector<int> &x, const vector<int> &y)
+{
+    vector<int> res(max(x.size(), y.size()));
+    for (int i = 0; i < x.size(); ++i)
+    {
+        res[i] += x[i];
+    }
+    for (int i = 0; i < y.size(); ++i)
+    {
+        res[i] -= y[i];
+    }
+    for (int i = 0; i < res.size(); ++i)
+    {
+        (res[i] += MOD) %= MOD;
+    }
+    return res;
+}
+const vector<int> operator+(const vector<int> &x, const vector<int> &y)
+{
+    vector<int> res(max(x.size(), y.size()));
+    for (int i = 0; i < x.size(); ++i)
+    {
+        res[i] += x[i];
+    }
+    for (int i = 0; i < y.size(); ++i)
+    {
+        res[i] += y[i];
+    }
+    for (int i = 0; i < res.size(); ++i)
+    {
+        res[i] %= MOD;
+    }
+    return res;
+}
+const vector<int> INV(const vector<int> &x)
+{
+    vector<int> res(1, power(x.front(), MOD - 2));
+    for (int i = 1; i < x.size(); i <<= 1, res.resize(i))
+    {
+        res = res * 2 - vector<int>(x.begin(), x.begin() + i + i) * res * res;
+    }
+    return res;
+}
+const vector<int> qiudao(const vector<int> &x)
+{
+    if (x.empty())
+    {
+        return vector<int>();
+    }
+    vector<int> res(x.size() - 1);
+    for (int i = 1; i < x.size(); ++i)
+    {
+        res[i - 1] = x[i] * i % MOD;
+    }
+    return res;
+}
+const vector<int> jifen(const vector<int> &x)
+{
+    vector<int> res(x.size() + 1);
+    for (int i = 1; i < res.size(); ++i)
+    {
+        res[i] = x[i - 1] * power(i, MOD - 2) % MOD;
+    }
+    return res;
+}
 signed main()
 {
     ios::sync_with_stdio(false);
@@ -104,5 +202,8 @@ signed main()
     {
         cin >> A[i];
     }
+    B = jifen(qiudao(A) * INV(A));
+    B.resize(n);
+    print(B);
     return 0;
 }
