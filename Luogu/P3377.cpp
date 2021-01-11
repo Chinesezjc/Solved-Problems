@@ -24,55 +24,104 @@ using namespace std;
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
+class node
+{
+public:
+    int v, p;
+    friend bool operator<(const node &A, const node &B)
+    {
+        return A.v == B.v ? A.p < B.p : A.v < B.v;
+    }
+};
 template <class Type>
 class heap
 {
 private:
     class node
     {
-    public:
-        Type val;
+    private:
         int dis;
-        node *fa, *lson, *rson;
-        void swap()
-        {
-            swap(lson, rson);
-        }
-        bool bad() const
-        {
-            return lson_dis() < rson_dis();
-        }
+        void swap_son() { swap(lson, rson); }
+        bool bad() const { return lson_dis() < rson_dis(); }
+        int lson_dis() const { return lson ? lson->dis : -1; }
+        int rson_dis() const { return rson ? rson->dis : -1; }
+
+    public:
+        node(Type VAL = Type(), node *LSON = 0, node *RSON = 0) : dis(0), val(VAL), lson(LSON), rson(RSON) {}
+        Type val;
+        node *lson, *rson;
         void update()
         {
             if (bad())
-                swap();
+                swap_son();
             dis = rson_dis() + 1;
         }
-
-    private:
-        int lson_dis() const { return lson ? lson->dis : -1; }
-        int rson_dis() const { return rson ? rson->dis : -1; }
+        friend node *merge_node(node *A, node *B)
+        {
+            if (A->rson == A || B->rson == B || A->lson == A || B->lson == B)
+            {
+                cout << "NMSL" << endl;
+            }
+            if (A == B)
+            {
+                cout << "NMSL" << endl;
+            }
+            if (B->val < A->val)
+                swap(*A, *B);
+            if (A->rson)
+                merge_node(A->rson, B);
+            else
+                A->rson = B;
+            A->update();
+            return A;
+        }
     };
     node *root;
 
 public:
-    bool empty() const { return root; }
-    Type top() const { return root ? root->val : Type(); }
+    bool empty() const { return root == 0; }
+    Type top() const { return empty() ? Type() : root->val; }
     void push(const Type &x)
     {
         if (empty())
-            return (void)root = new node{x, 0, 0, 0, 0};
-        
+            root = new node(x);
+        else
+            merge_node(root, new node(x));
     }
     void pop()
     {
+        if (empty())
+            return;
+        node *tmp = root;
+        root->update();
+        if (root->rson)
+            root = merge_node(root->lson, root->rson);
+        else if (root->lson)
+            root = root->lson;
+        else
+            root = 0;
+        delete tmp;
     }
     void merge(heap &x)
     {
+        if (x.empty() || &x == this)
+            return;
+        if (empty())
+        {
+            root = x.root;
+            return;
+        }
+        root = merge_node(root, x.root);
+        x.root = 0;
     }
 };
-heap<int> h[100005];
-int n, m;
+heap<node> h[100005];
+int n, m, fa[100005];
+bool del[100005];
+int find(int now)
+{
+    return now == fa[now] ? now : fa[now] = find(fa[now]);
+}
 signed main()
 {
     ios::sync_with_stdio(false);
@@ -80,8 +129,9 @@ signed main()
     for (int i = 1; i <= n; ++i)
     {
         static int tmp;
+        fa[i] = i;
         cin >> tmp;
-        h[i].push(tmp);
+        h[i].push({tmp, i});
     }
     for (int i = 1; i <= m; ++i)
     {
@@ -91,12 +141,23 @@ signed main()
         {
         case 1:
             cin >> x >> y;
-            h[x].merge(h[y]);
+            if (!del[x] && !del[y] && find(x) != find(y))
+            {
+                h[find(x)].merge(h[find(y)]);
+                fa[find(y)] = find(x);
+            }
             break;
         case 2:
             cin >> x;
-            cout << (h[x].empty() ? h[x].top() : -1) << endl;
-            h[x].pop();
+            if (del[x])
+                cout << -1 << endl;
+            else
+            {
+                const node tmp = h[find(x)].top();
+                h[find(x)].pop();
+                cout << tmp.v << endl;
+                del[tmp.p] = true;
+            }
             break;
         }
     }
