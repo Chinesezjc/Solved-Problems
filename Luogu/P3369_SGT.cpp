@@ -36,16 +36,14 @@ private:
         int num, sum, siz;
         node *son[2], *fa;
         node *&lson = son[0], *&rson = son[1];
-
-    public:
         bool query_son(node *const &Son) const
         {
             return Son == rson;
         }
-        void update()
+        void update(bool up)
         {
             int oldsiz = siz, oldsum = sum;
-            siz = 0;
+            siz = 1;
             sum = num;
             if (lson)
             {
@@ -57,8 +55,8 @@ private:
                 siz += rson->siz;
                 sum += rson->sum;
             }
-            if ((siz != oldsiz || sum != oldsum) && fa)
-                fa->update();
+            if (up && (siz != oldsiz || sum != oldsum) && fa)
+                fa->update(true);
         }
         void modify_son(bool const &Side, node *const &Son)
         {
@@ -75,21 +73,25 @@ private:
         }
     };
     node *root;
-    template <class InputIterator>
-    node *_rebuild(const InputIterator &_first, const InputIterator &_last)
+    template <class RandomAccessIterator>
+    node *_rebuild(const RandomAccessIterator &_first, const RandomAccessIterator &_last)
     {
         if (_first == _last)
             return 0;
-        InputIterator mid = (_last - _first) / 2 + _first;
-        return new node{mid->first, mid->second, mid->second, _last - _first,
-                        _rebuild(_first, mid), _rebuild(mid + 1, _last), 0};
+        RandomAccessIterator mid = (_last - _first) / 2 + _first;
+        node *const res = new node{mid->first, mid->second, mid->second, _last - _first,
+                                   _rebuild(_first, mid), _rebuild(mid + 1, _last), 0};
+        if (res->lson)
+            res->lson->fa = res;
+        if (res->rson)
+            res->rson->fa = res;
+        res->update(false);
+        return res;
     }
-    void clear(node *const &now)
+    void clear(node *const now)
     {
         if (now == root)
-        {
             root = 0;
-        }
         if (now->fa)
             now->fa->modify_son(now->fa->query_son(now), 0);
         if (now->lson)
@@ -120,9 +122,11 @@ private:
         else
         {
             node *const fa = now->fa;
-            bool son = fa->query_son(now);
+            bool Son = fa->query_son(now);
             clear(now);
-            fa->modify_son(son, _rebuild(tmp.begin(), tmp.end()));
+            fa->modify_son(Son, _rebuild(tmp.begin(), tmp.end()));
+            fa->son[Son]->fa = fa;
+            fa->update(true);
         }
     }
 
@@ -148,6 +152,8 @@ public:
             root = new node{Value, 1, 1, 1, 0, 0, 0};
             return;
         }
+        if (root->bad())
+            rebuild(root);
         node *now = root;
         while (true)
         {
@@ -162,7 +168,7 @@ public:
                 }
                 else
                 {
-                    now = now->lson = new node{Value, 1, 1, 1, 0, 0, now};
+                    now = now->lson = new node{Value, 0, 0, 1, 0, 0, now};
                     break;
                 }
             }
@@ -177,19 +183,21 @@ public:
                 }
                 else
                 {
-                    now = now->rson = new node{Value, 1, 1, 1, 0, 0, now};
+                    now = now->rson = new node{Value, 0, 0, 1, 0, 0, now};
                     break;
                 }
             }
-            ++now->num;
             break;
         }
-        now->update();
+        ++now->num;
+        now->update(true);
     }
     bool erase(const Type &Value)
     {
         if (!root)
             return false;
+        if (root->bad())
+            rebuild(root);
         node *now = root;
         while (true)
         {
@@ -202,8 +210,7 @@ public:
                     now = now->lson;
                     continue;
                 }
-                else
-                    return false;
+                return false;
             }
             if (now->val < Value)
             {
@@ -214,18 +221,19 @@ public:
                     now = now->rson;
                     continue;
                 }
-                else
-                    return false;
+                return false;
             }
             --now->num;
-            now->update();
+            now->update(true);
             return true;
         }
     }
     int query_rank(const Type &Value)
     {
         if (!root)
-            return -INF;
+            return 1;
+        if (root->bad())
+            rebuild(root);
         node *now = root;
         int res = 0;
         while (true)
@@ -239,8 +247,7 @@ public:
                     now = now->lson;
                     continue;
                 }
-                else
-                    return res + 1;
+                return res + 1;
             }
             if (now->val < Value)
             {
@@ -254,37 +261,82 @@ public:
                     now = now->rson;
                     continue;
                 }
-                else
-                    return res + 1;
+                return res + 1;
             }
             if (now->lson)
                 res += now->lson->sum;
             return res + 1;
         }
     }
-    Type query_val(const int &Rank) const
+    Type query_val(int Rank)
     {
-    }
-    Type greater_val(const Type &Value) const
-    {
-    }
-    Type less_val(const Type &Value) const
-    {
+        if (!root)
+            return Type();
+        if (root->bad())
+            rebuild(root);
+        node *now = root;
+        while (true)
+        {
+            if (now->lson)
+            {
+                if (now->lson->bad())
+                    rebuild(now->lson);
+                if (now->lson->sum >= Rank)
+                {
+                    now = now->lson;
+                    continue;
+                }
+                Rank -= now->lson->sum;
+            }
+            if (Rank <= now->num)
+                return now->val;
+            Rank -= now->num;
+            if (now->rson)
+            {
+                if (now->rson->bad())
+                    rebuild(now->rson);
+                if (now->rson->sum >= Rank)
+                {
+                    now = now->rson;
+                    continue;
+                }
+                Rank -= now->rson->sum;
+            }
+            return Type();
+        }
     }
 };
-SGT<char> sgt;
+SGT<int> sgt;
+int m;
 signed main()
 {
     ios::sync_with_stdio(false);
-    string s = "123456789523156489465asafd";
-    sgt.build(s.begin(), s.end());
-    cout << "NMLs" << endl;
-    vector<pair<char, int>> nmsl;
-    sgt.visit(nmsl);
-    for (auto i : nmsl)
+    cin >> m;
+    for (int i = 1; i <= m; ++i)
     {
-        cout << i.first << ' ' << i.second << endl;
+        static int opt, x;
+        cin >> opt >> x;
+        switch (opt)
+        {
+        case 1:
+            sgt.insert(x);
+            break;
+        case 2:
+            sgt.erase(x);
+            break;
+        case 3:
+            cout << sgt.query_rank(x) << endl;
+            break;
+        case 4:
+            cout << sgt.query_val(x) << endl;
+            break;
+        case 5:
+            cout << sgt.query_val(sgt.query_rank(x) - 1) << endl;
+            break;
+        case 6:
+            cout << sgt.query_val(sgt.query_rank(x + 1)) << endl;
+            break;
+        }
     }
-    cout << sgt.query_rank('5') << endl;
     return 0;
 }
