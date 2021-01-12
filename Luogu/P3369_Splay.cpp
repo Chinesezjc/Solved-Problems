@@ -37,23 +37,27 @@ protected:
         node *&lson = son[0], *&rson = son[1];
         node(const Type VAL = Type(), const int NUM = 0, node *const FA = 0, node *const L = 0, node *const R = 0)
             : val(VAL), num(NUM), son{L, R}, fa(FA) { update(); }
-        friend int size(node *const &x) { return x ? sum : 0; }
+        friend int size(node *const &x) { return x ? x->sum : 0; }
         bool query_son() const { return fa ? fa->rson == this : 0; }
         void update() { sum = num + size(lson) + size(rson); }
         friend void connect(node *const Fa, node *const Son, const bool which)
         {
-            Fa->son[which] = Son;
-            Son->fa = Fa;
+            if (Fa)
+                Fa->son[which] = Son;
+            if (Son)
+                Son->fa = Fa;
         }
     };
     node *root;
     void rotate(node *now)
     {
         node *Fa = now->fa;
-        bool which = query_son(now);
-        connect(Fa->fa, now, query_son(Fa));
+        bool which = now->query_son();
+        connect(Fa->fa, now, Fa->query_son());
         connect(Fa, now->son[!which], which);
         connect(now, Fa, !which);
+        Fa->update();
+        now->update();
     }
     void splay(node *now, node *Fa)
     {
@@ -66,8 +70,27 @@ protected:
         if (!Fa)
             root = now;
     }
+    void _visit(node *now) const
+    {
+        if (!now)
+            return;
+        if (now->lson)
+        {
+            cout << now->val << ',' << now->sum << ' ' << now->lson->val << ',' << now->lson->sum << endl;
+            _visit(now->lson);
+        }
+        if (now->rson)
+        {
+            cout << now->val << ',' << now->sum << ' ' << now->rson->val << ',' << now->rson->sum << endl;
+            _visit(now->rson);
+        }
+    }
 
 public:
+    void visit() const
+    {
+        _visit(root);
+    }
     void insert(const Type &Value)
     {
         if (!root)
@@ -92,22 +115,102 @@ public:
         while (now->val != Value)
         {
             if (Value < now->val)
+            {
                 if (now->lson)
                     now = now->lson;
                 else
                     return false;
+            }
             if (Value > now->val)
+            {
                 if (now->rson)
                     now = now->rson;
                 else
                     return false;
+            }
         }
         --now->num;
-        splay(now);
+        splay(now, 0);
         if (!now->num)
         {
-            if(now->lson)
+            if (now->lson)
+            {
+                node *Lson = now->lson;
+                while (Lson->rson)
+                    Lson = Lson->rson;
+                splay(Lson, root);
+                connect(Lson, root->rson, true);
+                root = Lson;
+            }
+            else
+                root = now->rson;
+            if (root)
+            {
+                root->fa = 0;
+                root->update();
+            }
+            delete now;
         }
+        return true;
+    }
+    int query_rank(const Type &Value)
+    {
+        if (!root)
+            return 1;
+        node *now = root;
+        int res = 0;
+        while (true)
+        {
+            if (Value < now->val)
+            {
+                if (now->lson)
+                    now = now->lson;
+                else
+                    break;
+                continue;
+            }
+            res += size(now->lson);
+            if (now->val == Value)
+            {
+                break;
+            }
+            res += now->num;
+            if (now->val < Value)
+            {
+                if (now->rson)
+                    now = now->rson;
+                else
+                    break;
+                continue;
+            }
+        }
+        splay(now, 0);
+        return res + 1;
+    }
+    Type query_val(int Rank)
+    {
+        if (!root)
+            return Type();
+        node *now = root;
+        while (true)
+        {
+            if (Rank <= size(now->lson))
+            {
+                now = now->lson;
+                continue;
+            }
+            Rank -= size(now->lson);
+            if (Rank <= now->num)
+                break;
+            Rank -= now->num;
+            if (Rank <= size(now->rson))
+            {
+                now = now->rson;
+                continue;
+            }
+        }
+        splay(now, 0);
+        return now->val;
     }
 };
 Splay<int> splay;
