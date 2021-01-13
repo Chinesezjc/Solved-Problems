@@ -17,6 +17,7 @@
 #include <map>
 #include <set>
 #include <ctime>
+#include <cassert>
 // #define debug
 #define int long long
 #define double long double
@@ -24,13 +25,6 @@ using namespace std;
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-int power(int A, int B, int C)
-{
-    int res = 1;
-    while (B)
-        (B & 1) && (res = res * A % C), B >>= 1, A = A * A % C;
-    return res;
-}
 template <class Type>
 class LCT
 {
@@ -38,86 +32,157 @@ private:
     class node
     {
     public:
-        Type val, x;
-        int siz;
-        bool rev;
-        node *fa, *son[2];
-        node *&lson = son[0], *&rson = son[1];
+        Type val, sum = Type();
+        bool rev = false;
+        int fa, son[2];
+        int &lson = son[0], &rson = son[1];
         node(const Type &VAL = Type(), const int &FA = 0, const int &LSON = 0, const int &RSON = 0)
-            : val(VAL), fa(FA), son{LSON, RSON}, rev(false) { pushup(); }
-        friend Type Xor(node *const now) { return now ? now->x : 0; }
-        friend int size(node *const now) { return now ? now->siz : 0; }
-        friend SonType query_son(node *const now)
-        {
-            return now->fa && (now->fa->lson == now || now->fa->rson == now) ? now == now->fa->rson : -1;
-        }
-        void pushup()
-        {
-            x = val ^ Xor(lson) ^ Xor(rson);
-            siz = 1 + size(lson) + size(rson);
-        }
-        void pushdown()
-        {
-            if (rev)
-            {
-                swap(lson, rson);
-                if (lson)
-                    lson->rev ^= true;
-                if (rson)
-                    rson->rev ^= true;
-            }
-        }
-        friend void connect(node *const Fa, node *const Son, const SonType &Which)
-        {
-            if (Fa && ~Which)
-                Fa->son[Which] = Son;
-            if (Son)
-                Son->fa = Fa;
-        }
+            : val(VAL), fa(FA), son{LSON, RSON} {}
+        node(const node &tmp)
+            : val(tmp.val), sum(tmp.sum), rev(tmp.rev), fa(tmp.fa), son{tmp.lson, tmp.rson} {}
+        void swap_son() { swap(lson, rson); }
     };
-    node *root;
-    vector<node *> g;
-    void rotate(node *const &now)
+    vector<node> g;
+    void pushdown(const int &now)
     {
-        node *Fa = now->fa;
+        if (g[now].rev)
+        {
+            g[now].swap_son();
+            g[g[now].lson].rev ^= true;
+            g[g[now].rson].rev ^= true;
+            g[now].rev = false;
+        }
+    }
+    void pushup(const int &now) { g[now].sum = g[now].val ^ g[g[now].lson].sum ^ g[g[now].rson].sum; }
+    void connect(const int &Fa, const int &Son, const int &Which)
+    {
+        if (Fa && ~Which)
+            g[Fa].son[Which] = Son;
+        if (Son)
+            g[Son].fa = Fa;
+    }
+    int query_son(const int &now) const
+    {
+        return g[g[now].fa].lson == now || g[g[now].fa].rson == now ? g[g[now].fa].rson == now : -1;
+    }
+    void rotate(const int &now)
+    {
+        int Fa = g[now].fa;
         bool Which = query_son(now);
-        connect(Fa->fa, now, query_son(Fa));
-        connect(Fa, now->son[!Which], Which);
+        connect(g[Fa].fa, now, query_son(Fa));
+        connect(Fa, g[now].son[!Which], Which);
         connect(now, Fa, !Which);
-        Fa->pushup();
+        pushup(Fa);
     }
-    void init_pushdown(node *const now)
+    void init_splay(const int &now)
     {
-        if (~query_son(now))
-            init_pushdown(now->fa);
-        now->pushdown();
+        if (!now)
+            return;
+        init_splay(g[now].fa);
+        pushdown(now);
     }
-    void splay(node *const &now)
+    void splay(const int &now)
     {
-        init_pushdown(now);
+        init_splay(now);
         while (~query_son(now))
         {
-            if (query_son(now) == query_son(now->fa))
-                rotate(now->fa);
+            if (query_son(g[now].fa) == query_son(now))
+                rotate(g[now].fa);
             rotate(now);
         }
-        now->pushup();
+        pushup(now);
+    }
+    void access(int now)
+    {
+        for (int lst = 0; now; lst = now, now = g[now].fa)
+        {
+            splay(now);
+            g[now].rson = lst;
+            pushup(now);
+        }
+    }
+    void reverse(const int &now) { g[now].rev ^= true; }
+    void make_root(const int &now)
+    {
+        assert(0 < now && now < g.size());
+        access(now);
+        splay(now);
+        reverse(now);
+    }
+    int find_root(int now)
+    {
+        access(now);
+        splay(now);
+        for (pushdown(now); g[now].lson; pushdown(now))
+            now = g[now].lson;
+        splay(now);
+        return now;
+    }
+    void split(const int &A, const int &B)
+    {
+        make_root(A);
+        access(B);
+        splay(B);
+        assert(find_root(B) == A);
+    }
+    void _visit(const int &now) const
+    {
+        if (!now)
+            return;
+        cout << g[now].fa << ' ' << now << ' ' << query_son(now) << endl;
+        _visit(g[now].lson);
+        _visit(g[now].rson);
     }
 
 public:
-    void add_node(const Type Value = Type()) { g.push_back(new node(Value)); }
-    void access(const int Pos)
+    LCT() { g.push_back(node()); }
+    void add_node(const Type &Value = Type()) { g.push_back(Value); }
+    bool link(const int &A, const int &B)
     {
-        for (node *now = g[Pos], lst = 0;now;lst=now,now=now->fa)
-        {
-            splay(now);
-        }
+        make_root(A);
+        if (find_root(B) == A)
+            return false;
+        access(B);
+        splay(B);
+        g[B].fa = A;
+        return true;
+    }
+    bool cut(const int &A, const int &B)
+    {
+        split(A, B);
+        splay(B);
+        if (g[B].lson != A || g[A].rson)
+            return false;
+        g[A].fa = 0;
+        g[B].lson = 0;
+        pushup(B);
+        return true;
+    }
+    void visit(const int &now)
+    {
+        splay(now);
+        _visit(now);
+    }
+    Type sum(const int &A, const int &B)
+    {
+        split(A, B);
+        splay(A);
+        return g[A].sum;
+    }
+    void modify(int now, const Type &Value)
+    {
+        splay(now);
+        g[now].val = Value;
+        for (pushup(now); ~query_son(now); pushup(now))
+            now = g[now].fa;
     }
 };
-LCT<char> lct;
+LCT<int> lct;
 int n, m;
 signed main()
 {
+    freopen("data.in", "r", stdin);
+//    freopen("data.out", "w", stdout);
     ios::sync_with_stdio(false);
     cin >> n >> m;
     for (int i = 0; i < n; ++i)
@@ -133,19 +198,20 @@ signed main()
         switch (opt)
         {
         case 0:
-            --x;
-            --y;
+            cout << lct.sum(x, y) << endl;
+//            lct.visit(x);
             break;
         case 1:
-            --x;
-            --y;
+            lct.link(x, y);
+//            lct.visit(x);
             break;
         case 2:
-            --x;
-            --y;
+            lct.cut(x, y);
+//            lct.visit(x);
             break;
         case 3:
-            --x;
+            lct.modify(x, y);
+//            lct.visit(x);
             break;
         }
     }
