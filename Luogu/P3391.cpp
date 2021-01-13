@@ -36,16 +36,17 @@ class Splay
         node *&lson = son[0], *&rson = son[1];
         bool rev;
         node(const Type &VAL = Type(), node *FA = 0, node *LSON = 0, node *RSON = 0)
-            : val(VAL), fa(FA), son{LSON, RSON} { update(); }
+            : val(VAL), fa(FA), son{LSON, RSON}, rev(false) { update(); }
         friend int size(node *now) { return now ? now->siz : 0; }
         void update() { siz = 1 + size(lson) + size(rson); }
-        bool query_son() { return fa ? fa->rson == this : false; }
+        bool query_son() const { return fa ? fa->rson == this : false; }
         void swap_son() { swap(lson, rson); }
         friend void push_down(node *now)
         {
             if (now && now->rev)
             {
                 now->swap_son();
+                now->rev = false;
                 if (now->lson)
                     now->lson->rev ^= true;
                 if (now->rson)
@@ -67,7 +68,7 @@ class Splay
     {
         if (First == Last)
             return 0;
-        RandomAccessIterator Middle = First + (Last - First) / 2;
+        RandomAccessIterator Middle = (Last - First) / 2 + First;
         node *res = new node(*Middle);
         connect(res, _build(First, Middle), false);
         connect(res, _build(Middle + 1, Last), true);
@@ -89,6 +90,7 @@ class Splay
     {
         if (!now)
             return;
+        push_down(now);
         _visit(now->lson, container);
         container.push_back(now->val);
         _visit(now->rson, container);
@@ -96,8 +98,8 @@ class Splay
     void rotate(node *now)
     {
         node *Fa = now->fa;
-        bool Which = query_son(now);
-        connect(Fa->fa, now, query_son(Fa));
+        bool Which = now->query_son();
+        connect(Fa->fa, now, Fa->query_son());
         connect(Fa, now->son[!Which], Which);
         connect(now, Fa, !Which);
         Fa->update();
@@ -107,7 +109,7 @@ class Splay
     {
         while (now->fa != Fa)
         {
-            if (now->fa->fa == Fa && query_son(now) == query_son(now->fa))
+            if (now->fa->fa != Fa && now->query_son() == now->fa->query_son())
                 rotate(now->fa);
             rotate(now);
         }
@@ -134,10 +136,9 @@ class Splay
                 now = now->rson;
                 continue;
             }
-            now = 0;
         }
         if (!now)
-            return Type();
+            return 0;
         splay(now, 0);
         return now;
     }
@@ -156,19 +157,23 @@ public:
     }
     void reverse(int LeftRank, int RightRank)
     {
+        if (LeftRank == 1 && RightRank == size(root))
+            return void(root->rev ^= true);
         if (LeftRank == 1)
         {
-            node *now = find(LeftRank);
-            splay(now, 0);
-            if (now->rson)
-                now->rson->rev ^= true;
-        }
-        else if (RightRank == size(root))
-        {
-            node *now = find(RightRank);
+            node *now = find(RightRank + 1);
             splay(now, 0);
             if (now->lson)
                 now->lson->rev ^= true;
+            return;
+        }
+        if (RightRank == size(root))
+        {
+            node *now = find(LeftRank - 1);
+            splay(now, 0);
+            if (now->rson)
+                now->rson->rev ^= true;
+            return;
         }
         node *l = find(LeftRank - 1), *r = find(RightRank + 1);
         splay(l, 0);
@@ -179,13 +184,24 @@ public:
 };
 Splay<int> splay;
 int n, m;
-string nmsl = "12345641fsad56f1asf";
+vector<int> tmp;
 signed main()
 {
     ios::sync_with_stdio(false);
-    splay.build(nmsl.begin(), nmsl.end());
-    splay.visit(nmsl);
-    cout << nmsl << endl;
-    // cin >> n >> m;
+    cin >> n >> m;
+    for (int i = 1; i <= n; ++i)
+        tmp.push_back(i);
+    splay.build(tmp.begin(), tmp.end());
+    for (int i = 1; i <= m; ++i)
+    {
+        static int l, r;
+        cin >> l >> r;
+        splay.reverse(l, r);
+    }
+    tmp.clear();
+    splay.visit(tmp);
+    for (auto i : tmp)
+        cout << i << ' ';
+    cout << endl;
     return 0;
 }
