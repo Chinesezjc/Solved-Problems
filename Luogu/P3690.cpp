@@ -76,9 +76,8 @@ private:
     }
     void init_splay(const int &now)
     {
-        if (!now)
-            return;
-        init_splay(g[now].fa);
+        if (~query_son(now))
+            init_splay(g[now].fa);
         pushdown(now);
     }
     void splay(const int &now)
@@ -160,8 +159,10 @@ public:
     }
     void visit(const int &now)
     {
+        cout << "<visit>" << endl;
         splay(now);
         _visit(now);
+        cout << "</visit>" << endl;
     }
     Type sum(const int &A, const int &B)
     {
@@ -181,8 +182,10 @@ LCT<int> lct;
 int n, m;
 signed main()
 {
+#ifdef debug
     freopen("data.in", "r", stdin);
-//    freopen("data.out", "w", stdout);
+    freopen("data.out", "w", stdout);
+#endif
     ios::sync_with_stdio(false);
     cin >> n >> m;
     for (int i = 0; i < n; ++i)
@@ -191,7 +194,7 @@ signed main()
         cin >> v;
         lct.add_node(v);
     }
-    for (int i = 0; i < m; ++i)
+    for (int i = 1; i <= m; ++i)
     {
         static int opt, x, y;
         cin >> opt >> x >> y;
@@ -199,19 +202,19 @@ signed main()
         {
         case 0:
             cout << lct.sum(x, y) << endl;
-//            lct.visit(x);
+            lct.visit(x);
             break;
         case 1:
-            lct.link(x, y);
-//            lct.visit(x);
+            cout << lct.link(x, y) << endl;
+            lct.visit(x);
             break;
         case 2:
             lct.cut(x, y);
-//            lct.visit(x);
+            lct.visit(x);
             break;
         case 3:
             lct.modify(x, y);
-//            lct.visit(x);
+            lct.visit(x);
             break;
         }
     }
