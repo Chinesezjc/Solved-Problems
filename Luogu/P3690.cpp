@@ -122,8 +122,11 @@ private:
         make_root(A);
         access(B);
         splay(B);
+#ifdef debug
         assert(find_root(B) == A);
+#endif
     }
+#ifdef debug
     void _visit(const int &now) const
     {
         if (!now)
@@ -132,6 +135,7 @@ private:
         _visit(g[now].lson);
         _visit(g[now].rson);
     }
+#endif
 
 public:
     LCT() { g.push_back(node()); }
@@ -143,6 +147,8 @@ public:
             return false;
         access(B);
         splay(B);
+        pushdown(A);
+        make_root(B);
         g[B].fa = A;
         return true;
     }
@@ -157,6 +163,7 @@ public:
         pushup(B);
         return true;
     }
+#ifdef debug
     void visit(const int &now)
     {
         cout << "<visit>" << endl;
@@ -164,6 +171,7 @@ public:
         _visit(now);
         cout << "</visit>" << endl;
     }
+#endif
     Type sum(const int &A, const int &B)
     {
         split(A, B);
@@ -182,10 +190,6 @@ LCT<int> lct;
 int n, m;
 signed main()
 {
-#ifdef debug
-    freopen("data.in", "r", stdin);
-    freopen("data.out", "w", stdout);
-#endif
     ios::sync_with_stdio(false);
     cin >> n >> m;
     for (int i = 0; i < n; ++i)
@@ -202,19 +206,27 @@ signed main()
         {
         case 0:
             cout << lct.sum(x, y) << endl;
+#ifdef debug
             lct.visit(x);
+#endif
             break;
         case 1:
-            cout << lct.link(x, y) << endl;
+            lct.link(x, y);
+#ifdef debug
             lct.visit(x);
+#endif
             break;
         case 2:
             lct.cut(x, y);
+#ifdef debug
             lct.visit(x);
+#endif
             break;
         case 3:
             lct.modify(x, y);
+#ifdef debug
             lct.visit(x);
+#endif
             break;
         }
     }
