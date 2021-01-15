@@ -58,14 +58,6 @@ private:
         }
         friend node *merge_node(node *A, node *B)
         {
-            if (A->rson == A || B->rson == B || A->lson == A || B->lson == B)
-            {
-                cout << "NMSL" << endl;
-            }
-            if (A == B)
-            {
-                cout << "NMSL" << endl;
-            }
             if (B->val < A->val)
                 swap(*A, *B);
             if (A->rson)
