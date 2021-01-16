@@ -25,7 +25,7 @@ const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
 int n, m, s, t, head[4005], cnt = 2, dis[4005], cur[4005], dfn[4005], low[4005], fa[4005], sta[4005], top, tim;
-bool ins[4005], ans1[4005], ans2[4005];
+bool ins[4005], ans1[60005], ans2[60005];
 class edge
 {
 public:
@@ -35,7 +35,7 @@ void add_flow(const int &F, const int &T, const int &Flow, const int &Pos)
 {
     e[cnt] = {T, Flow, head[F], Pos};
     head[F] = cnt++;
-    e[cnt] = {F, Flow, head[T], Pos};
+    e[cnt] = {F, 0, head[T], Pos};
     head[T] = cnt++;
 }
 bool bfs()
@@ -83,7 +83,11 @@ void dinic()
     while (bfs())
     {
         copy(head + 1, head + 1 + n, cur + 1);
-        cout << dfs() << endl;
+#ifdef debug
+        cout << "flow add " << dfs() << endl;
+#else
+        dfs();
+#endif
     }
 }
 void Tarjan(int now)
@@ -106,12 +110,14 @@ void Tarjan(int now)
     if (dfn[now] == low[now])
     {
         fa[now] = now;
+        ins[now] = false;
         while (sta[top] != now)
         {
             fa[sta[top]] = now;
             ins[sta[top]] = false;
             --top;
         }
+        --top;
     }
 }
 signed main()
@@ -128,17 +134,29 @@ signed main()
     for (int i = 1; i <= n; ++i)
         if (!dfn[i])
             Tarjan(i);
+#ifdef debug
     for (int i = 1; i <= n; ++i)
     {
-        cout << fa[i] << endl;
+        for (int j = head[i]; j; j = e[j].n)
+        {
+            if (e[j].v)
+                cout << i << ' ' << e[j].t << endl;
+        }
     }
+    cout << endl;
+    for (int i = 1; i <= n; ++i)
+    {
+        cout << fa[i] << ' ';
+    }
+    cout << endl;
+#endif
     for (int i = 2; i != cnt; ++i)
     {
         if ((i & 1) || e[i].v || fa[e[i].t] == fa[e[i ^ 1].t])
             continue;
         ans1[i / 2] = true;
-        if (min(fa[s], fa[t]) == min(fa[e[i].t], fa[e[i ^ 1].t]) &&
-            max(fa[s], fa[t]) == max(fa[e[i].t], fa[e[i ^ 1].t]))
+        if (fa[s] == fa[e[i ^ 1].t] &&
+            fa[t] == fa[e[i].t])
             ans2[i / 2] = true;
     }
     for (int i = 1; i <= m; ++i)
