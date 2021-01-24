@@ -26,7 +26,7 @@ signed main()
 a:
     system("mkdata.exe > data.in");
     int t = clock();
-    int back = system("CuC.exe < data.in > data.out");
+    int back = system("AuC.exe < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;

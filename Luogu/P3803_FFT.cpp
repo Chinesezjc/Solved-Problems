@@ -17,160 +17,61 @@
 #include <map>
 #include <set>
 #include <ctime>
+#include <complex>
 // #define debug
-#define int long long
-#define double long double
-using namespace std;
+
 const double PI = acos(-1);
-const double eps = 0.0000000001;
-const int INF = 0x3fffffffffffffff;
-template <typename T>
-class complex
+
+void FFT(std::complex<double> *A, const unsigned n, const int IFFT = 1)
 {
-public:
-    T x, y;
-    complex(const T xx = 0, const T yy = 0)
+    if (n == 1)
+        return;
+    static std::complex<double> B[1 << 21];
+    unsigned mid = n / 2;
+    for (unsigned i = 0; i != n; ++i)
+        B[i / 2 + (i & 1 ? mid : 0)] = A[i];
+    std::copy(B, B + n, A);
+    FFT(A /* */, mid, IFFT);
+    FFT(A + mid, mid, IFFT);
+    std::complex<double> w1(cos(2 * PI / n), IFFT * sin(2 * PI / n)), w(1, 0);
+    for (unsigned i = 0; i != mid; ++i, w *= w1)
     {
-        x = xx;
-        y = yy;
+        std::complex<double> tmp = w * A[i + mid];
+        A[i + mid] = A[i] - tmp;
+        A[i /* */] = A[i] + tmp;
     }
-    const complex operator+(const complex &__Val) const
-    {
-        return {x + __Val.x, y + __Val.y};
-    }
-    const complex operator-(const complex &__Val) const
-    {
-        return {x - __Val.x, y - __Val.y};
-    }
-    const complex operator*(const complex &__Val) const
-    {
-        return {x * __Val.x - y * __Val.y, x * __Val.y + y * __Val.x};
-    }
-    complex &operator+=(const complex &__Val)
-    {
-        return *this = *this + __Val;
-    }
-    complex &operator-=(const complex &__Val)
-    {
-        return *this = *this - __Val;
-    }
-    complex &operator*=(const complex &__Val)
-    {
-        return *this = *this * __Val;
-    }
-    friend ostream &operator<<(ostream &ost, const complex &__Val)
-    {
-        return ost << '(' << __Val.x << ',' << __Val.y << ')';
-    }
-};
-vector<complex<double>> A, B, C;
-int n, m, len, rev[1 << 21];
+}
+void IFFT(std::complex<double> *A, const unsigned n)
+{
+    FFT(A, n, -1);
+    for (unsigned i = 0; i != n; ++i)
+        A[i] /= n;
+}
+
+std::complex<double> A[1 << 21], B[1 << 21], C[1 << 21];
+unsigned n, m, len, x[1000005];
 signed main()
 {
-    ios::sync_with_stdio(false);
-    cin >> n >> m;
-    ++n;
-    ++m;
-    len = 1ll << (int)ceil(log2(n + m - 1));
-    A.resize(len);
-    B.resize(len);
-    C.resize(len);
-    for (int i = 0; i < n; ++i)
+    std::ios::sync_with_stdio(false);
+    std::cin >> n >> m;
+    for (unsigned i = 0; i <= n; ++i)
     {
-        cin >> A[i].x;
+        std::cin >> x[i];
+        A[i] = x[i];
     }
-    for (int i = 0; i < m; ++i)
+    for (unsigned i = 0; i <= m; ++i)
     {
-        cin >> B[i].x;
+        std::cin >> x[i];
+        B[i] = x[i];
     }
-    for (int i = 1; i < len; ++i)
-    {
-        rev[i] = (rev[i >> 1] >> 1) | ((i & 1) * len >> 1);
-    }
-    for (int i = 0; i < len; ++i)
-    {
-        if (rev[i] < i)
-        {
-            swap(A[i], A[rev[i]]);
-            swap(B[i], B[rev[i]]);
-        }
-    }
-#ifdef debug
-    for (int i = 0; i < A.size(); ++i)
-    {
-        cout << A[i];
-    }
-    cout << endl;
-#endif
-    for (int Len = 2; Len <= len; Len *= 2)
-    {
-        complex<double> Y1, Y2, w1(cos(PI * 2 / Len), sin(PI * 2 / Len));
-        for (int i = 0; i < len; i += Len)
-        {
-            complex<double> w(1, 0);
-            for (int j = 0; j < Len / 2; ++j, w *= w1)
-            {
-                Y1 = A[i | j], Y2 = w * A[i | j | Len / 2];
-                A[i | j /*     */] = Y1 + Y2;
-                A[i | j | Len / 2] = Y1 - Y2;
-                Y1 = B[i | j], Y2 = w * B[i | j | Len / 2];
-                B[i | j /*     */] = Y1 + Y2;
-                B[i | j | Len / 2] = Y1 - Y2;
-            }
-        }
-    }
-#ifdef debug
-    for (int i = 0; i < A.size(); ++i)
-    {
-        cout << A[i];
-    }
-    cout << endl;
-    for (int i = 0; i < B.size(); ++i)
-    {
-        cout << B[i];
-    }
-    cout << endl;
-#endif
-    for (int i = 0; i < C.size(); ++i)
-    {
+    len = 1 << (unsigned)ceil(log2(n + m + 1));
+    FFT(A, len);
+    FFT(B, len);
+    for (unsigned i = 0; i != len; ++i)
         C[i] = A[i] * B[i];
-    }
-    for (int i = 0; i < len; ++i)
-    {
-        if (rev[i] < i)
-        {
-            swap(C[i], C[rev[i]]);
-        }
-    }
-    for (int Len = 2; Len <= len; Len *= 2)
-    {
-        complex<double> Y1, Y2, w1(cos(PI * 2 / Len), -sin(PI * 2 / Len));
-        for (int i = 0; i < len; i += Len)
-        {
-            complex<double> w(1, 0);
-            for (int j = 0; j < Len / 2; ++j, w *= w1)
-            {
-                Y1 = C[i | j], Y2 = w * C[i | j | Len / 2];
-                C[i | j /*     */] = Y1 + Y2;
-                C[i | j | Len / 2] = Y1 - Y2;
-            }
-        }
-    }
-#ifdef debug
-    for (int i = 0; i < C.size(); ++i)
-    {
-        cout << C[i] << ' ';
-    }
-    cout << endl;
-#endif
-    for (int i = 0; i < C.size(); ++i)
-    {
-        C[i] *= {1.0 / C.size(), 0};
-    }
-    for (int i = 0; i < n + m - 1; ++i)
-    {
-        cout << (int)(C[i].x + 0.5) << ' ';
-    }
-    cout << endl;
+    IFFT(C, len);
+    for (unsigned i = 0; i <= n + m; ++i)
+        std::cout << (unsigned)(C[i].real() + 0.5) << ' ';
+    std::cout << std::endl;
     return 0;
 }

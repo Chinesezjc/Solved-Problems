@@ -1,154 +1,74 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <cstdio>
+#include <cmath>
 using namespace std;
+const int MAXN = 2 * 1e6 + 10;
 inline int read()
-{ //读优
-    int x = 0;
-    char ch = getchar();
-    while (ch < '0' || ch > '9')
-        ch = getchar();
-    while (ch >= '0' && ch <= '9')
-    {
-        x = x * 10 + ch - '0';
-        ch = getchar();
-    }
-    return x;
-}
-int n, m, s, t;
-struct Edge
 {
-    int u, v, w, nxt;
-} e[120010];
-int head[4010], cnt = 1; //注意：cnt必须从1开始，因为加边是n和n+1，偶数和偶数+1可以通过异或转化，具体请自行推导
-inline void add(int u, int v, int w)
-{ //前向星加边
-    e[++cnt].u = u;
-    e[cnt].v = v;
-    e[cnt].w = w;
-    e[cnt].nxt = head[u];
-    head[u] = cnt;
+    char c = getchar();
+    int x = 0, f = 1;
+    while (c < '0' || c > '9')
+    {
+        if (c == '-')
+            f = -1;
+        c = getchar();
+    }
+    while (c >= '0' && c <= '9')
+    {
+        x = x * 10 + c - '0';
+        c = getchar();
+    }
+    return x * f;
 }
-int dis[4010];
-int bfs()
+const double Pi = acos(-1.0);
+struct complex
 {
-    queue<int> q; //广搜队列
-    q.push(s);
-    memset(dis, -1, sizeof(dis)); //所有编号赋初值
-    dis[s] = 0;                   //初始原点编号，让其可以朝下分层
-    while (!q.empty())
-    {
-        int u = q.front();
-        q.pop(); //取出队首
-        for (int i = head[u]; i; i = e[i].nxt)
-        {
-            if (e[i].w > 0 && dis[e[i].v] == -1)
-            {                             //如果此点可以流并且它没有被编号过
-                dis[e[i].v] = dis[u] + 1; //分层编号
-                q.push(e[i].v);           //入队
-                if (e[i].v == t)
-                    return 1; //如果将汇点编完号，返回，示意dinic继续找增广
-            }
-        }
-    }
-    return 0; //找不到一条可行流，示意dinic返回
-}
-int dfs(int x, int f)
+    double x, y;
+    complex(double xx = 0, double yy = 0) { x = xx, y = yy; }
+} a[MAXN], b[MAXN];
+complex operator+(complex a, complex b) { return complex(a.x + b.x, a.y + b.y); }
+complex operator-(complex a, complex b) { return complex(a.x - b.x, a.y - b.y); }
+complex operator*(complex a, complex b) { return complex(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); } //不懂的看复数的运算那部分
+void fast_fast_tle(int limit, complex *a, int type)
 {
-    if (x == t || f == 0)
-        return f; //如果搜到了增广路或者没有流量走不下去
-    int used = 0; //定义已经流出的流量
-    for (int i = head[x]; i; i = e[i].nxt)
-    {
-        if (e[i].w > 0 && dis[e[i].v] == dis[x] + 1)
-        {                                        //如果此边能走通并且编号正确（根据dinic，只有是下一编号才能走通）
-            int k = dfs(e[i].v, min(e[i].w, f)); //向下流，注意处理流量!!!一定要二者最小的！
-            if (k == 0)
-                continue; //无法流通，继续处理下一条边
-            used += k;
-            f -= k; //减少剩余流量，增加流出流量
-            e[i].w -= k;
-            e[i ^ 1].w += k; //对正向弧和反向弧做流量处理
-            if (f == 0)
-                break; //剩余流量为0，结束
-        }
-    }
-    if (used == 0)
-        dis[x] = -1; //无法下流，使其退出分层，下次不用再走，否则浪费效率
-    return used;     //返回可行流的最大流量
-}
-int dinic()
-{
-    int flow = 0; //最大流
-    while (bfs())
-        flow += dfs(s, 0x7fffffff); //加上每次增广可继续下流的流量
-    return flow;
-}
-int dfn[4010], low[4010], vis[4010], scc[4010], num, cntt;
-stack<int> st;
-void tarjan(int u)
-{ //tarjan模板，判scc分量，见模板题，不做详细解释
-    st.push(u);
-    vis[u] = 1;
-    dfn[u] = low[u] = ++cntt;
-    for (int i = head[u]; i; i = e[i].nxt)
-    {
-        if (e[i].w == 0)
-            continue; //注意,满流时无法继续，是本题的关键点
-        if (dfn[e[i].v] == 0)
-        {
-            tarjan(e[i].v);
-            low[u] = min(low[u], low[e[i].v]);
-        }
-        else if (vis[e[i].v] == 1)
-            low[u] = min(dfn[e[i].v], low[u]);
-    }
-    if (dfn[u] == low[u])
-    {
-        ++num;
-        while (1)
-        {
-            int top = st.top();
-            st.pop();
-            vis[top] = 0;
-            scc[top] = num;
-            if (top == u)
-                break;
-        }
-    }
+    if (limit == 1)
+        return; //只有一个常数项
+    complex a1[limit >> 1], a2[limit >> 1];
+    for (int i = 0; i <= limit; i += 2) //根据下标的奇偶性分类
+        a1[i >> 1] = a[i], a2[i >> 1] = a[i + 1];
+    fast_fast_tle(limit >> 1, a1, type);
+    fast_fast_tle(limit >> 1, a2, type);
+    complex Wn = complex(cos(2.0 * Pi / limit), type * sin(2.0 * Pi / limit)), w = complex(1, 0);
+    //Wn为单位根，w表示幂
+    for (int i = 0; i < (limit >> 1); i++, w = w * Wn) //这里的w相当于公式中的k
+        a[i] = a1[i] + w * a2[i],
+        a[i + (limit >> 1)] = a1[i] - w * a2[i]; //利用单位根的性质，O(1)得到另一部分
 }
 int main()
 {
-    n = read();
-    m = read();
-    s = read();
-    t = read();
-    for (int i = 1; i <= m; ++i)
-    {
-        int u, v, w;
-        u = read();
-        v = read();
-        w = read();
-        add(u, v, w);
-        add(v, u, 0); //加边，正向弧和反向弧
-    }
-    int flow = dinic(); //尽管flow并没有用，但调试较为方便
-    for (int i = 1; i <= n; ++i)
-        if (scc[i] == 0)
-            tarjan(i); //如果没有判过scc，跑一遍，求出它属于的联通块
-    //判断方法和公式见前面
-    for (int i = 2; i < cnt; i += 2)
-    { //这样才能跳到每一条正向边
-        int u = e[i].u, v = e[i].v;
-        if (e[i].w == 0 && scc[u] != scc[v])
-        { //记得判断满流
-            printf("1 ");
-            if (scc[u] == scc[s] && scc[v] == scc[t])
-                printf("1");
-            else
-                printf("0");
-        }
-        else
-            printf("0 0");
-        printf("\n");
-    }
+    int N = read(), M = read();
+    for (int i = 0; i <= N; i++)
+        a[i].x = read();
+    for (int i = 0; i <= M; i++)
+        b[i].x = read();
+    int limit = 1;
+    while (limit <= N + M)
+        limit <<= 1;
+    fast_fast_tle(limit, a, 1);
+    fast_fast_tle(limit, b, 1);
+    //后面的1表示要进行的变换是什么类型
+    //1表示从系数变为点值
+    //-1表示从点值变为系数
+    //至于为什么这样是对的，可以参考一下c向量的推导过程，
+    for (int i = 0; i <= limit; i++)
+        a[i] = a[i] * b[i];
+    cout << fixed;
+    cout.precision(2);
+    for (int i = 0; i <= limit; i++)
+        cout << '(' << a[i].x << ',' << a[i].y << ')' << ' ';
+    cout << endl;
+    fast_fast_tle(limit, a, -1);
+    for (int i = 0; i <= N + M; i++)
+        printf("%d ", (int)(a[i].x / limit + 0.5)); //按照我们推倒的公式，这里还要除以n
     return 0;
 }

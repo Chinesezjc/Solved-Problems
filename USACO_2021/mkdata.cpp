@@ -25,14 +25,14 @@ using namespace std;
 #define int long long
 unsigned int seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
-int n = 50;
+int n = 5, k = 5, m = 1000000000000000000;
 signed main()
 {
     ios::sync_with_stdio(false);
-    cout << n << endl;
-    for (int i = 1; i <= n; ++i)
+    cout << n << ' ' << k << ' ' << m << endl;
+    for (int i = 1; i <= k; ++i)
     {
-        cout << (Rand() & 1 ? 'N' : 'E') << ' ' << Rand() % 20000 << ' ' << Rand() % 20000 << endl;
+        cout << Rand() % n + 1 << ' ' << Rand() % n + 1 << endl;
     }
     return 0;
 }

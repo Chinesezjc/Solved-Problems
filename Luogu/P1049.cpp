@@ -20,26 +20,26 @@
 // #define debug
 #define int long long
 #define double long double
-using namespace std;
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-int n, m, ans;
-bool d[1000005];
+int n, V, v;
+std::bitset<1000005> dp;
 signed main()
 {
-    ios::sync_with_stdio(false);
-    cin >> n >> m;
-    for (int i = 1; i <= m; ++i)
+    std::ios::sync_with_stdio(false);
+    std::cin >> V >> n;
+    dp[0] = true;
+    while (n--)
     {
-        static int a, b;
-        cin >> a >> b;
-        d[a] ^= true;
-        d[b] ^= true;
+        std::cin >> v;
+        dp |= dp << v;
     }
-    for (int i = 1; i <= n; ++i)
-        if (d[i])
-            ++ans;
-    cout << ans / 2 << endl;
+    for (int i = V; i >= 0; --i)
+        if (dp[i])
+        {
+            std::cout << V - i << std::endl;
+            return 0;
+        }
     return 0;
 }
