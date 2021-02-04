@@ -28,26 +28,43 @@ const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
 unsigned long long seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
-int n = 4000, m = 60000, s, t;
+int n = 500, m = 2000, s, t;
 signed main()
 {
     ios::sync_with_stdio(false);
-    do
+    std::cout << n << std::endl;
+    for (int i = 1; i <= n; ++i)
     {
-        s = Rand() % n + 1;
-        t = Rand() % n + 1;
-    } while (s == t);
-    cout << n << ' ' << m << ' ' << s << ' ' << t << endl;
+        std::cout << (int)Rand() % 1001 << " \n"[i == n];
+    }
+    std::cout << m << std::endl;
     for (int i = 1; i <= m; ++i)
     {
-        static int a, b, v;
-        do
+        int t = Rand() % 7 + 1;
+        switch (t)
         {
-            a = Rand() % n + 1;
-            b = Rand() % n + 1;
-            v = Rand() % m + 1;
-        } while (a == b || b == s || a == t);
-        cout << a << ' ' << b << ' ' << v << endl;
+        case 1:
+            cout << 'U' << ' ' << Rand() % n + 1 << ' ' << Rand() % n + 1 << std::endl;
+            break;
+        case 2:
+            cout << "A1" << ' ' << Rand() % n + 1 << ' ' << (int)Rand() % 1001 << std::endl;
+            break;
+        case 3:
+            cout << "A2" << ' ' << Rand() % n + 1 << ' ' << (int)Rand() % 1001 << std::endl;
+            break;
+        case 4:
+            cout << "A3" << ' ' << (int)Rand() % 1001 << std::endl;
+            break;
+        case 5:
+            cout << "F1" << ' ' << Rand() % n + 1 << std::endl;
+            break;
+        case 6:
+            cout << "F2" << ' ' << Rand() % n + 1 << std::endl;
+            break;
+        case 7:
+            cout << "F3" << std::endl;
+            break;
+        }
     }
     return 0;
 }

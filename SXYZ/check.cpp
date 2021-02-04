@@ -14,54 +14,29 @@
 #include <map>
 #include <set>
 #include <time.h>
+#include <fstream>
 // #include<windows.h>
 #define int long long
 #define PI 3.14159265358979323
 #define INF 0x3fffffffffffffff
 using namespace std;
-int n, m, a[1000005], b[1000005], c[1000005], d[1000005], num[1000005];
-string ans, out;
+string a, b;
+int line;
+ifstream ans("data.ans"), out("data.out");
 signed main()
 {
     ios::sync_with_stdio(false);
-    freopen("data.in", "r", stdin);
-    cin >> n >> m;
-    for (int i = 1; i <= m; ++i)
+    while (ans >> a && out >> b)
     {
-        cin >> a[i] >> b[i] >> c[i] >> d[i];
+        ++line;
+        // std::cout << a << endl
+        //           << b << endl;
+        for (int i = 0; i < a.size(); ++i)
+            if (a[i] != b[i])
+            {
+                cout << "first wrong appeared:" << line << ' ' << i + 1 << std::endl;
+                return 0;
+            }
     }
-    fclose(stdin);
-    freopen("data.ans", "r", stdin);
-    cin >> ans;
-    fclose(stdin);
-    freopen("data.out", "r", stdin);
-    cin >> out;
-    if (ans == "IMPOSSIBLE")
-    {
-        cout << (ans == out ? "OK" : "WA firstline") << endl;
-        return 0;
-    }
-    else
-    {
-        if (ans != out)
-        {
-            cout << "WA firstline" << endl;
-        }
-    }
-    for (int i = 1; i <= n; ++i)
-    {
-        cin >> num[i];
-    }
-    fclose(stdin);
-    for (int i = 1; i <= m; ++i)
-    {
-        if (!(b[i] == num[a[i]] || d[i] == num[c[i]]))
-        {
-            cout << "WA" << endl;
-            cout << "test" << i << endl;
-            return 0;
-        }
-    }
-    cout << "OK" << endl;
     return 0;
 }

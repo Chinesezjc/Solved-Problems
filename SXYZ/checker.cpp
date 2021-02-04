@@ -26,7 +26,7 @@ signed main()
 a:
     system("mkdata.exe > splay.in");
     int t = clock();
-    int back = system("std.exe");
+    int back = system("SXYZ113.exe");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;
