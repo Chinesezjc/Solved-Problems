@@ -28,6 +28,14 @@ namespace FGF
 			for (int j = 0; j < n; j++)
 				rk[i][t[j]] = j + 1;
 		}
+		for (int i = 1; i <= n; ++i)
+		{
+			for (int j = 1; j <= n; ++j)
+			{
+				std::cout << rk[i][j] << ' ';
+			}
+			std::cout << std::endl;
+		}
 		while (q.size())
 		{
 			int u = q.front();
@@ -43,18 +51,6 @@ namespace FGF
 					nxt[v + n] = u, nxt[u] = v + n;
 				}
 			}
-		}
-		for (int i = 1; i <= n; ++i)
-		{
-			std::cout << nxt[i] << std::endl;
-		}
-		for (int i = 1; i <= n; ++i)
-		{
-			for (int j = 1; j <= n; ++j)
-			{
-				std::cout << a[i][j] << ' ';
-			}
-			std::cout << std::endl;
 		}
 	}
 	void work()
@@ -77,6 +73,8 @@ namespace FGF
 			int x;
 			cin >> x;
 			solve(x > n);
+			for (int i = 1; i <= n + n; ++i)
+				std::cout << nxt[i] << " \n"[i == n + n];
 			cout << nxt[x] << endl;
 			cin >> x;
 			while (~x)
