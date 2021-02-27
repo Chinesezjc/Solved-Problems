@@ -1,6 +1,5 @@
 //This Code was made by Chinese_zjc_.
 #include <iostream>
-#include <fstream>
 #include <iomanip>
 #include <algorithm>
 #include <vector>
@@ -8,130 +7,105 @@
 #include <cmath>
 #include <queue>
 #include <stack>
-#include <list>
 #include <string>
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
-#include <cctype>
 #include <map>
 #include <set>
-#include <ctime>
-// #define debug
+#include <time.h>
+// #include<windows.h>
 #define int long long
 #define double long double
+using namespace std;
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-const int MAXN = 510;
-
-int n, m;
-int v[MAXN][MAXN];
-
-int lm[MAXN], rm[MAXN], d[MAXN];
-int matchl[MAXN], matchr[MAXN], lst[MAXN];
-bool visl[MAXN], visr[MAXN];
-
-std::queue<int> que;
-void Match(int now)
+int n, m, s, t, a, b, c, d, cnt = 1, head[5005], dis[5005], cur[5005], ans, cost;
+queue<int> que;
+bool in[5005];
+struct edge
 {
-    int tmp;
-    while (now)
-    {
-        tmp = matchl[lst[now]];
-        matchl[lst[now]] = now;
-        matchr[now] = lst[now];
-        now = tmp;
-    }
+    int n, t, cap, cost;
+} e[100005];
+void add(int F, int T, int CAP, int COST)
+{
+    e[++cnt] = {head[F], T, CAP, COST};
+    head[F] = cnt;
 }
-void bfs(int s)
+bool spfa()
 {
-    memset(visl, 0, sizeof(visl));
-    memset(visr, 0, sizeof(visr));
-    std::fill(d + 1, d + n + 1, INF);
-
-    while (!que.empty())
-        que.pop();
+    std::queue<int> que;
+    std::fill(dis + 1, dis + 1 + n, INF);
     que.push(s);
-
-    while (true)
+    in[s] = true;
+    dis[s] = 0;
+    while (!que.empty())
     {
-        while (!que.empty())
-        {
-            int now = que.front();
-            que.pop();
-            visl[now] = true;
-            for (int i = 1; i <= n; ++i)
-                if (!visr[i] && lm[now] + rm[i] - v[now][i] < d[i])
-                {
-                    d[i] = lm[now] + rm[i] - v[now][i];
-                    lst[i] = now;
-                    if (!d[i])
-                    {
-                        visr[i] = true;
-                        if (!matchr[i])
-                            return Match(i);
-                        else
-                            que.push(matchr[i]);
-                    }
-                }
-        }
-        int down = INF;
-        for (int i = 1; i <= n; ++i)
-            if (!visr[i])
-                down = std::min(down, d[i]);
-        for (int i = 1; i <= n; ++i)
-        {
-            if (visl[i])
-                lm[i] -= down;
-            if (visr[i])
-                rm[i] += down;
-            else
-                d[i] -= down;
-        }
-        for (int i = 1; i <= n; ++i)
-            if (!visr[i] && !d[i])
+        int now = que.front();
+#ifdef debug
+        std::cout << now << ' ' << dis[now] << std::endl;
+#endif
+        que.pop();
+        in[now] = false;
+        for (int i = head[now]; i; i = e[i].n)
+            if (e[i].cap && dis[e[i].t] > dis[now] + e[i].cost)
             {
-                visr[i] = 1;
-                if (!matchr[i])
-                    return Match(i);
-                else
-                    que.push(matchr[i]);
+                dis[e[i].t] = dis[now] + e[i].cost;
+                if (!in[e[i].t])
+                {
+                    que.push(e[i].t);
+                    in[e[i].t] = true;
+                }
             }
     }
+#ifdef debug
+    getchar();
+#endif
+    return dis[t] != INF;
 }
-int KM()
+int dfs(int now = s, int flow = INF)
 {
-    for (int i = 1; i <= n; ++i)
-        lm[i] = *std::max_element(v[i] + 1, v[i] + 1 + n);
-    for (int i = 1; i <= n; ++i)
-        bfs(i);
+    if (now == t)
+        return flow;
     int res = 0;
-    for (int i = 1; i <= n; ++i)
-        res += lm[i] + rm[i];
+    in[now] = true;
+    while (cur[now] && flow)
+    {
+        if (!in[e[cur[now]].t] && e[cur[now]].cap && dis[now] + e[cur[now]].cost == dis[e[cur[now]].t])
+        {
+            int tmp = dfs(e[cur[now]].t, std::min(e[cur[now]].cap, flow));
+            cost += e[cur[now]].cost * tmp;
+            e[cur[now]].cap -= tmp;
+            e[cur[now] ^ 1].cap += tmp;
+            flow -= tmp;
+            res += tmp;
+        }
+        cur[now] = e[cur[now]].n;
+    }
+    in[now] = false;
     return res;
 }
 signed main()
 {
-    std::ios::sync_with_stdio(false);
-    std::cin >> n >> m;
-    for (int i = 1; i <= n; ++i)
-    {
-        for (int j = 1; j <= n; ++j)
-        {
-            v[i][j] = -INF;
-        }
-    }
+    ios::sync_with_stdio(false);
+    cin >> n >> m >> s >> t;
     for (int i = 1; i <= m; ++i)
     {
-        static int a, b, c;
-        std::cin >> a >> b >> c;
-        v[a][b] = std::max(v[a][b], c);
+        cin >> a >> b >> c >> d;
+        add(a, b, c, +d);
+        add(b, a, 0, -d);
     }
-    std::cout << KM() << std::endl;
-    for (int i = 1; i <= n; ++i)
+    while (spfa())
     {
-        std::cout << matchr[i] << " \n"[i == n];
+        std::copy(head + 1, head + 1 + n, cur + 1);
+        int l = dfs(s, INF);
+        ans += l;
+        while (l)
+        {
+            ans += l = dfs(s, INF);
+        }
     }
+    cout << ans << ' ' << cost << endl;
     return 0;
 }
