@@ -23,9 +23,9 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-const int MOD = 998244353;
+const int MOD = 985661441;
 const int W = 3;
-int T, s, k, I[1 << 21], fact[1 << 21];
+int T, s, k, EXP2[32], I[1 << 21], fact[1 << 21];
 int power(int A, int B)
 {
     int res = 1;
@@ -38,7 +38,7 @@ int power(int A, int B)
     }
     return res;
 }
-const int MAXLEN = 20;
+const int MAXLEN = 22;
 int omega[1 << MAXLEN << 1];
 std::vector<int> rev;
 class polynomial : public std::vector<int>
@@ -191,6 +191,11 @@ public:
         res.resize(N);
         return res;
     }
+    friend polynomial operator<<(polynomial X, int N)
+    {
+        X.insert(X.begin(), N, 0);
+        return X;
+    }
     friend void print(const polynomial &X)
     {
         for (auto i : X)
@@ -202,21 +207,36 @@ const int polynomial::EXP2[31] = {1 << 000, 1 << 001, 1 << 002, 1 << 003, 1 << 0
                                   1 << 010, 1 << 011, 1 << 012, 1 << 013, 1 << 014, 1 << 015, 1 << 016, 1 << 017,
                                   1 << 020, 1 << 021, 1 << 022, 1 << 023, 1 << 024, 1 << 025, 1 << 026, 1 << 027,
                                   1 << 030, 1 << 031, 1 << 032, 1 << 033, 1 << 034, 1 << 035, 1 << 036};
-polynomial A;
-int n;
+polynomial F[4];
 signed main()
 {
     std::ios::sync_with_stdio(false);
+    for (int i = 0; i != 32; ++i)
+        EXP2[i] = 1 << i;
     I[1] = 1;
     for (int i = 2; i != 1 << 21; ++i)
         I[i] = (MOD - MOD / i) * I[MOD % i] % MOD;
-    std::cin >> n;
-    A.resize(n);
-    for (int i = 0; i != n; ++i)
-        std::cin >> A[i];
-    A = EXP(A);
-    for (int i = 0; i != n; ++i)
-        std::cout << A[i] << ' ';
-    std::cout << std::endl;
+    F[1].resize(1 << 21);
+    F[1][0] = 1;
+    for (int i = 1; i != 1 << 21; ++i)
+        F[1][i] = F[1][i - 1] * I[i] % MOD;
+    F[0] = F[1] << 1;
+    // for (int i = 0; i != 10; ++i)
+    //     std::cout << F[0][i] << ' ';
+    // std::cout << std::endl;
+    F[2] = EXP(F[1] << 1, 1 << 20);
+    // for (int i = 0; i != 10; ++i)
+    //     std::cout << F[2][i] << ' ';
+    // std::cout << std::endl;
+    F[3] = EXP(F[2] << 1, 1 << 20);
+    fact[0] = 1;
+    for (int i = 1; i < 1 << 21; ++i)
+        fact[i] = fact[i - 1] * i % MOD;
+    std::cin >> T;
+    for (int i = 1; i <= T; ++i)
+    {
+        std::cin >> s >> k;
+        std::cout << "Case #" << i << ": " << F[std::min(k, s)][s] * fact[s] % MOD << std::endl;
+    }
     return 0;
 }
