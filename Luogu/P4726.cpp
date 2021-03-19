@@ -25,7 +25,7 @@ const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
 const int MOD = 998244353;
 const int W = 3;
-int T, s, k, I[1 << 21], fact[1 << 21];
+int T, s, k, I[1 << 22], fact[1 << 22];
 int power(int A, int B)
 {
     int res = 1;
@@ -38,7 +38,7 @@ int power(int A, int B)
     }
     return res;
 }
-const int MAXLEN = 20;
+const int MAXLEN = 21;
 int omega[1 << MAXLEN << 1];
 std::vector<int> rev;
 class polynomial : public std::vector<int>
@@ -204,16 +204,50 @@ const int polynomial::EXP2[31] = {1 << 000, 1 << 001, 1 << 002, 1 << 003, 1 << 0
                                   1 << 030, 1 << 031, 1 << 032, 1 << 033, 1 << 034, 1 << 035, 1 << 036};
 polynomial A;
 int n;
+polynomial operator*(int A, polynomial B)
+{
+    for (int i = 0; i < B.size(); ++i)
+        B[i] = B[i] * A % MOD;
+    return B;
+}
+polynomial operator*(polynomial A, polynomial B)
+{
+    return MUL(A, B);
+}
+polynomial power(polynomial A, int B)
+{
+    A.resize(1000000);
+    polynomial res(1, 1);
+    res.resize(1000000);
+    while (B)
+    {
+        if (B & 1)
+        {
+            res = res * A;
+            res.resize(1000000);
+        }
+        B >>= 1;
+        A = A * A;
+        A.resize(1000000);
+    }
+    return res;
+}
 signed main()
 {
     std::ios::sync_with_stdio(false);
     I[1] = 1;
-    for (int i = 2; i != 1 << 21; ++i)
+    for (int i = 2; i != 1 << 22; ++i)
         I[i] = (MOD - MOD / i) * I[MOD % i] % MOD;
     std::cin >> n;
     A.resize(n);
     for (int i = 0; i != n; ++i)
         std::cin >> A[i];
+    freopen("data.out", "w", stdout);
+    polynomial F = A, G = power(F, 998244352);
+    for (int i = 0; i < G.size(); ++i)
+        std::cout << G[i] << ' ';
+    std::cout << std::endl;
+    return 0;
     A = EXP(A);
     for (int i = 0; i != n; ++i)
         std::cout << A[i] << ' ';
