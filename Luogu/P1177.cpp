@@ -23,30 +23,15 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-int n;
-double l, r, a[13];
-double f(double x)
-{
-	double res = 0;
-	for (int i = n; i--;)
-		res = res * x + a[i];
-	return res;
-}
+int n, a[1000005];
 signed main()
 {
-	std::ios::sync_with_stdio(false);
-	std::cin >> n >> l >> r;
-	++n;
-	for (int i = n; i--;)
-		std::cin >> a[i];
-	while (r - l > eps)
-	{
-		double mid1 = l + (r - l) / 3, mid2 = r - (r - l) / 3;
-		if (f(mid1) < f(mid2))
-			l = mid1;
-		else
-			r = mid2;
-	}
-	std::cout << std::fixed << std::setprecision(20) << l << std::endl;
-	return 0;
+    std::ios::sync_with_stdio(false);
+    std::cin >> n;
+    for (int i = 1; i <= n; ++i)
+        std::cin >> a[i];
+    std::sort(a + 1, a + 1 + n);
+    for (int i = 1; i <= n; ++i)
+        std::cout << a[i] << " \n"[i == n];
+    return 0;
 }

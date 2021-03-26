@@ -23,30 +23,23 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-int n;
-double l, r, a[13];
-double f(double x)
+int power(int A, int B, int C)
 {
-	double res = 0;
-	for (int i = n; i--;)
-		res = res * x + a[i];
-	return res;
+    int res = 1;
+    while (B)
+    {
+        if (B & 1)
+            res = res * A % C;
+        B >>= 1;
+        A = A * A % C;
+    }
+    return res % C;
 }
+int a, b, c;
 signed main()
 {
-	std::ios::sync_with_stdio(false);
-	std::cin >> n >> l >> r;
-	++n;
-	for (int i = n; i--;)
-		std::cin >> a[i];
-	while (r - l > eps)
-	{
-		double mid1 = l + (r - l) / 3, mid2 = r - (r - l) / 3;
-		if (f(mid1) < f(mid2))
-			l = mid1;
-		else
-			r = mid2;
-	}
-	std::cout << std::fixed << std::setprecision(20) << l << std::endl;
-	return 0;
+    std::ios::sync_with_stdio(false);
+    std::cin >> a >> b >> c;
+    std::cout << a << '^' << b << " mod " << c << '=' << power(a, b, c) << std::endl;
+    return 0;
 }

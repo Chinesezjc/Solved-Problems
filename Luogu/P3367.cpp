@@ -17,23 +17,33 @@
 #include <map>
 #include <set>
 #include <ctime>
-#include <random>
-#include <chrono>
 // #define debug
 #define int long long
 #define double long double
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-unsigned long long seed = std::chrono::system_clock::now().time_since_epoch().count() / 1000000;
-std::mt19937_64 Rand(seed);
-std::map<int, std::map<int, bool>> g;
-int n = 500;
+int n, m, fa[1000005];
+int find(int now) { return now == fa[now] ? now : fa[now] = find(fa[now]); }
 signed main()
 {
     std::ios::sync_with_stdio(false);
-    std::cout << n << std::endl;
-    for (int i = 0; i != n; ++i)
-        std::cout << char(Rand() % 26 + 'a');
+    std::cin >> n >> m;
+    for (int i = 1; i <= n; ++i)
+        fa[i] = i;
+    for (int i = 1; i <= m; ++i)
+    {
+        static int x, y, z;
+        std::cin >> x >> y >> z;
+        switch (x)
+        {
+        case 1:
+            fa[find(y)] = find(z);
+            break;
+        case 2:
+            std::cout << (find(y) == find(z) ? 'Y' : 'N') << std::endl;
+            break;
+        }
+    }
     return 0;
 }

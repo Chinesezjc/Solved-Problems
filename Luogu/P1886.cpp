@@ -1,85 +1,70 @@
-#include<cstdio>
-using namespace std;
-struct dl{
-	int v,p;
-}min[1000001],max[1000001];
-int n,m,sl,sr,bl,br,x,i,ans[1000001];
-int main()
+//This Code was made by Chinese_zjc_.
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <algorithm>
+#include <vector>
+#include <bitset>
+#include <cmath>
+#include <queue>
+#include <stack>
+#include <list>
+#include <string>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
+#include <map>
+#include <set>
+#include <ctime>
+// #define debug
+#define int long long
+#define double long double
+const double PI = acos(-1);
+const double eps = 0.0000000001;
+const int INF = 0x3fffffffffffffff;
+int n, m, a[1000005], que[1000005], l, r;
+signed main()
 {
-	scanf("%d%d",&n,&m);
-	if(m==1)
+	std::ios::sync_with_stdio(false);
+	std::cin >> n >> m;
+	for (int i = 1; i <= n; ++i)
 	{
-		while(i<n)
-		{
-			++i;
-			scanf("%d",&ans[i]);
-			printf("%d ",ans[i]);
-		}
-		puts("");
-		i=0;
-		while(i<n)
-		{
-			++i;
-			printf("%d ",ans[i]);
-		}
-		return 0;
+		std::cin >> a[i];
 	}
-	while(i<m)
+	l = 1;
+	r = 0;
+	for (int i = 1; i < m; ++i)
 	{
-		++i;
-		scanf("%d",&x);
-		while(min[sr].v>x&&sl<=sr)
-		{
-			--sr;
-		}
-		++sr;
-		min[sr].p=i;
-		min[sr].v=x;
-		while(max[br].v<x&&bl<=br)
-		{
-			--br;
-		}
-		++br;
-		max[br].p=i;
-		max[br].v=x;
+		while (l <= r && a[que[r]] > a[i])
+			--r;
+		que[++r] = i;
 	}
-	printf("%d",min[sl].v);
-	ans[i]=max[bl].v;
-	while(i<n)
+	for (int i = m; i <= n; ++i)
 	{
-		++i;
-		scanf("%d",&x);
-		while(min[sl].p<=i-m)
-		{
-			++sl;
-		}
-		while(min[sr].v>x&&sl<=sr)
-		{
-			--sr;
-		}
-		++sr;
-		min[sr].p=i;
-		min[sr].v=x;
-		while(max[bl].p<=i-m)
-		{
-			++bl;
-		}
-		while(max[br].v<x&&bl<=br)
-		{
-			--br;
-		}
-		++br;
-		max[br].p=i;
-		max[br].v=x;
-		printf(" %d",min[sl].v);
-		ans[i]=max[bl].v;
+		while (l <= r && a[que[r]] > a[i])
+			--r;
+		que[++r] = i;
+		if (que[l] == i - m)
+			++l;
+		std::cout << a[que[l]] << " \n"[i == n];
 	}
-	puts("");
-	i=m-1;
-	while(i<n)
+	l = 1;
+	r = 0;
+	for (int i = 1; i < m; ++i)
 	{
-		++i;
-		printf("%d ",ans[i]);
+		while (l <= r && a[que[r]] < a[i])
+			--r;
+		que[++r] = i;
+	}
+	for (int i = m; i <= n; ++i)
+	{
+		while (l <= r && a[que[r]] < a[i])
+			--r;
+		que[++r] = i;
+		if (que[l] == i - m)
+			++l;
+		std::cout << a[que[l]] << " \n"[i == n];
 	}
 	return 0;
 }

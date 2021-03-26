@@ -23,28 +23,30 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-bool isn[100000008];
-int p[10000005], cnt, n, q;
+struct edge
+{
+    int f, t, v;
+    friend bool operator<(const edge &A, const edge &B) { return A.v < B.v; }
+} e[200005];
+int fa[5005], n, m, ans;
+int find(int now) { return now == fa[now] ? now : fa[now] = find(fa[now]); }
 signed main()
 {
     std::ios::sync_with_stdio(false);
-    std::cin >> n >> q;
-    for (int i = 2; i <= n; ++i)
+    std::cin >> n >> m;
+    for (int i = 1; i <= n; ++i)
+        fa[i] = i;
+    for (int i = 1; i <= m; ++i)
+        std::cin >> e[i].f >> e[i].t >> e[i].v;
+    std::sort(e + 1, e + 1 + m);
+    for (int i = 1; i <= m; ++i)
     {
-        if (!isn[i])
-            p[++cnt] = i;
-        for (int j = 1; j <= cnt && i * p[j] <= n; ++j)
+        if (find(e[i].f) != find(e[i].t))
         {
-            isn[i * p[j]] = true;
-            if (i % p[j] == 0)
-                break;
+            fa[find(e[i].f)] = find(e[i].t);
+            ans += e[i].v;
         }
     }
-    while (q--)
-    {
-        static int rk;
-        std::cin >> rk;
-        std::cout << p[rk] << std::endl;
-    }
+    std::cout << ans << std::endl;
     return 0;
 }

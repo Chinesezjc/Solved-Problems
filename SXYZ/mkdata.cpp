@@ -1,5 +1,6 @@
 //This Code was made by Chinese_zjc_.
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <algorithm>
 #include <vector>
@@ -7,67 +8,62 @@
 #include <cmath>
 #include <queue>
 #include <stack>
+#include <list>
 #include <string>
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
+#include <cctype>
 #include <map>
 #include <set>
-#include <time.h>
-#include <windows.h>
+#include <ctime>
 #include <random>
 #include <chrono>
+// #define debug
 #define int long long
-using namespace std;
-unsigned int seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
-mt19937_64 Rand(seed);
-const int MOD = 1000000007;
-int n = 10;
-int m = 2, T = 5, k = 2;
-bool can[1005][1005];
+#define double long double
+const double PI = acos(-1);
+const double eps = 0.0000000001;
+const int INF = 0x3fffffffffffffff;
+unsigned long long seed = std::chrono::system_clock::now().time_since_epoch().count() / 1000000;
+std::mt19937_64 Rand(seed);
+int n = Rand() % 5 + 5, fa[100005];
+std::vector<int> son[100005];
+int find(int now)
+{
+    return now == fa[now] ? now : fa[now] = find(fa[now]);
+}
+void dfs(int now)
+{
+    std::cout << (Rand() & 1 ? now : 0) << ' ';
+    for (int i = 0; i < son[now].size(); ++i)
+    {
+        if (fa[now] == son[now][i])
+            continue;
+        fa[son[now][i]] = now;
+        dfs(son[now][i]);
+        std::cout << (Rand() & 1 ? now : 0) << ' ';
+    }
+}
 signed main()
 {
-    ios::sync_with_stdio(false);
-    cout << n << ' ' << m << endl;
+    std::ios::sync_with_stdio(false);
+    std::cout << n << std::endl;
     for (int i = 1; i <= n; ++i)
+        fa[i] = i;
+    for (int i = 1; i < n; ++i)
     {
-        cout << (char)(Rand() % 26 + 'A');
+        int L, R;
+        do
+        {
+            L = Rand() % n + 1;
+            R = Rand() % n + 1;
+        } while (find(L) == find(R));
+        son[L].push_back(R);
+        son[R].push_back(L);
+        fa[find(L)] = find(R);
     }
-    cout << endl;
-    for (int i = 1; i <= m; ++i)
-    {
-        int opt = Rand() % 4 + 1;
-        if (opt == 1)
-        {
-            int l = Rand() % n + 1, r = Rand() % n + 1;
-            if (l > r)
-            {
-                swap(l, r);
-            }
-            cout << opt << ' ' << l << ' ' << r << ' ' << (char)(Rand() % 26 + 'A') << endl;
-        }
-        if (opt == 2)
-        {
-            int l = Rand() % n + 1, r = Rand() % n + 1;
-            if (l > r)
-            {
-                swap(l, r);
-            }
-            cout << opt << ' ' << l << ' ' << r << ' ' << Rand() % 26 << endl;
-        }
-        if (opt == 3)
-        {
-            cout << opt << ' ' << Rand() % n + 1 << endl;
-        }
-        if (opt == 4)
-        {
-            int l = Rand() % n + 1, r = Rand() % n + 1;
-            if (l > r)
-            {
-                swap(l, r);
-            }
-            cout << opt << ' ' << l << ' ' << r << endl;
-        }
-    }
+    memset(fa, 0, sizeof(fa));
+    dfs(Rand() % n + 1);
     return 0;
 }

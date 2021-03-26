@@ -1,85 +1,151 @@
-#include <cstdio>
-#include <cmath>
-#include <cstring>
-#define RG register
-#define R RG int
-#define G c = getchar()
-#define Calc(i, j) f[j] + qpow(abs(s[i] - s[j] - L)) //计算函数值
+#include <bits/stdc++.h>
 using namespace std;
-typedef long double LD; //开long double
-const int N = 1e5 + 9;
-int n, L, P, s[N], q[N], k[N], pr[N];
-LD f[N];
-char str[N][33];
-inline int in()
+
+typedef long long LL;
+
+const int N = 500000;
+
+int n, a[N * 2 + 9];
+
+void into()
 {
-    RG char G;
-    while (c < '-')
-        G;
-    R x = c & 15;
-    G;
-    while (c > '-')
-        x *= 10, x += c & 15, G;
-    return x;
+	scanf("%d", &n);
+	for (int i = 1; i < n << 1; ++i)
+		scanf("%d", &a[i]);
 }
-inline LD qpow(RG LD b)
-{ //自己写快速幂
-    RG LD a = 1;
-    for (R k = P; k; k >>= 1, b *= b)
-        if (k & 1)
-            a *= b;
-    return a;
+
+struct list_node
+{
+	int last, next;
+} d[N * 2 + 9];
+
+void Erase(int x, int y)
+{
+	d[x].next = d[y].next;
+	d[d[y].next].last = x;
 }
-inline int bound(R x, R y)
-{                          //二分临界值
-    R l = x, r = n + 1, m; //左端点设为x减小常数
-    while (l < r)
-    {
-        m = (l + r) >> 1;
-        Calc(m, x) >= Calc(m, y) ? r = m : l = m + 1;
-    }
-    return l;
+
+int pos[N + 9], nxt[N * 2 + 9];
+stack<int> sta;
+
+void Divide_ans(int l, int r, int rot)
+{
+	if (l > r)
+		return;
+	if (r - l & 1)
+	{
+		puts("no");
+		exit(0);
+	}
+	for (int i = l; i <= r; i = d[i].next)
+	{
+		if (!a[i])
+			continue;
+		for (; nxt[i];)
+		{
+			int p = nxt[i];
+			if (p > r)
+			{
+				puts("no");
+				exit(0);
+			}
+			Divide_ans(d[i].next, d[p].last, a[i]);
+			Erase(i, p);
+			nxt[i] = nxt[p];
+		}
+	}
+	int c = 0, c0 = 0;
+	for (int i = l; i <= r; i = d[i].next)
+		c += (bool)a[i], c0 += !a[i];
+	if (c0 < c - 1)
+	{
+		puts("no");
+		exit(0);
+	}
+	for (int i = l; i <= r && c0 > c; i = d[i].next)
+		if (!a[i])
+		{
+			if (sta.empty())
+			{
+				puts("no");
+				exit(0);
+			}
+			a[i] = sta.top();
+			sta.pop();
+			++c;
+			--c0;
+		}
+	for (int i = l; d[i].next <= r;)
+	{
+		if (!a[i] || d[i].last < l || d[i].next > r)
+		{
+			i = d[i].next;
+			continue;
+		}
+		int x = d[i].last, y = d[i].next;
+		if (!a[x] && a[y] || a[x] && !a[y])
+		{
+			a[x] = a[y] = a[x] | a[y];
+			Erase(x, y);
+			i = d[x].last;
+		}
+		else
+			i = d[i].next;
+	}
+	for (int i = l; i <= r; i = d[i].next)
+		if (!a[i])
+			a[i] = rot;
 }
+
+void Get_ans()
+{
+	if (a[1] && a[n * 2 - 1] && a[1] ^ a[n * 2 - 1])
+	{
+		puts("no");
+		exit(0);
+	}
+	a[1] = a[n * 2 - 1] = a[1] | a[n * 2 - 1];
+	for (int i = 1; i < n << 1; ++i)
+		d[i].last = i - 1, d[i].next = i + 1;
+	d[0].next = 1;
+	for (int i = n * 2 - 1; i >= 1; --i)
+	{
+		if (!a[i])
+			continue;
+		nxt[i] = pos[a[i]];
+		pos[a[i]] = i;
+	}
+	for (int i = 1; i <= n; ++i)
+		if (!pos[i])
+			sta.push(i);
+	Divide_ans(1, n * 2 - 1, 0);
+	for (int i = 1; i < n << 1; ++i)
+		pos[a[i]] = 1;
+	for (int i = 1; i <= n; ++i)
+		if (!pos[i])
+		{
+			puts("no");
+			exit(0);
+		}
+}
+
+void work()
+{
+	Get_ans();
+}
+
+void outo()
+{
+	puts("yes");
+	for (int i = 1; i < n << 1; ++i)
+		printf("%d ", a[i]);
+	puts("");
+}
+
 int main()
 {
-    R T = in(), i, h, t;
-    while (T--)
-    {
-        n = in();
-        L = in() + 1;
-        P = in(); //把L处理了一下
-        for (i = 1; i <= n; ++i)
-        {
-            if (scanf("%s", str[i]))
-                ;
-            s[i] = s[i - 1] + strlen(str[i]) + 1; //记前缀和
-        }
-        for (q[i = h = t = 1] = 0; i <= n; ++i)
-        {
-            while (h < t && k[h] <= i)
-                ++h;
-            f[i] = Calc(i, q[h]);
-            pr[i] = q[h]; //记录转移位置方便输出方案
-            while (h < t && k[t - 1] >= bound(q[t], i))
-                --t;
-            k[t] = bound(q[t], i);
-            q[++t] = i;
-        }
-        if (f[n] > 1e18)
-            puts("Too hard to arrange");
-        else
-        {
-            printf("%.0Lf\n", f[n]);
-            for (q[t = 0] = i = n; i; q[++t] = i = pr[i])
-                ;
-            for (; t; --t)
-            {
-                for (i = q[t] + 1; i < q[t - 1]; ++i)
-                    printf("%s ", str[i]);
-                puts(str[i]); //行末不要搞空格
-            }
-        }
-        puts("--------------------");
-    }
-    return 0;
+	into();
+	work();
+	outo();
+	return 0;
 }
