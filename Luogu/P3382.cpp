@@ -1,48 +1,52 @@
-//This code was made by Chinese_zjc_.
-#include<iostream>
-#include<cstdio>
-#include<algorithm>
-#include<cmath>
-#include<string>
-#include<iomanip>
+//This Code was made by Chinese_zjc_.
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <algorithm>
+#include <vector>
+#include <bitset>
+#include <cmath>
+#include <queue>
+#include <stack>
+#include <list>
+#include <string>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
+#include <map>
+#include <set>
+#include <ctime>
+// #define debug
 #define int long long
-#define INF 0x3fffffffffffffff
-using namespace std;
+#define double long double
+const double PI = acos(-1);
+const double eps = 0.0000000001;
+const int INF = 0x3fffffffffffffff;
 int n;
-double l,r,a[14],mid1,mid2;
-bool l_mid1,mid1_mid2,mid2_r;
+double l, r, a[13];
 double f(double x)
 {
-	double S=0;
-	for(int i=n;i>=0;--i)
-	{
-		S=S*x+a[i];
-	}
-	return S;
+	double res = 0;
+	for (int i = n; i--;)
+		res = res * x + a[i];
+	return res;
 }
 signed main()
 {
 	std::ios::sync_with_stdio(false);
-	cin>>n>>l>>r;
-	for(int i=n;i>=0;--i)
+	std::cin >> n >> l >> r;
+	++n;
+	for (int i = n; i--;)
+		std::cin >> a[i];
+	while (r - l > eps)
 	{
-		cin>>a[i];
-	}
-	while(l+0.0000001<r)
-	{
-		mid2=mid1=(r-l)*0.618;
-		mid1=r-mid1;
-		mid2=l+mid2;
-		if(f(mid1)<f(mid2))
-		{
-			l=mid1;
-		}
+		double mid1 = l + (r - l) / 3, mid2 = r - (r - l) / 3;
+		if (f(mid1) < f(mid2))
+			l = mid1;
 		else
-		{
-			r=mid2;
-		}
+			r = mid2;
 	}
-	cout<<fixed<<setprecision(5)<<l<<endl;
+	std::cout << std::fixed << std::setprecision(20) << l << std::endl;
 	return 0;
 }
-

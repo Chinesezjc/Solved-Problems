@@ -24,9 +24,9 @@ signed main()
 {
     ios::sync_with_stdio(false);
 a:
-    system("mkdata.exe > splay.in");
+    system("mkdata.exe > data.in");
     int t = clock();
-    int back = system("SXYZ113.exe");
+    int back = system("SXYZ30217.exe < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;
@@ -38,8 +38,8 @@ a:
         cout << "Time Limit Exceeded!" << endl;
         return 0;
     }
-    system("splay.exe");
-    if (!system("fc splay.out splay.ans"))
+    system("std.exe < data.in > data.ans");
+    if (!system("check.exe"))
     {
         goto a;
     }

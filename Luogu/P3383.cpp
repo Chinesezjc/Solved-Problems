@@ -1,40 +1,50 @@
+//This Code was made by Chinese_zjc_.
 #include <iostream>
-#include <cstdio>
+#include <fstream>
+#include <iomanip>
 #include <algorithm>
+#include <vector>
+#include <bitset>
 #include <cmath>
+#include <queue>
+#include <stack>
+#include <list>
 #include <string>
-using namespace std;
-bool s[100000001];
-int p[10000000], n, m, cnt;
-int main()
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
+#include <map>
+#include <set>
+#include <ctime>
+// #define debug
+#define int long long
+#define double long double
+const double PI = acos(-1);
+const double eps = 0.0000000001;
+const int INF = 0x3fffffffffffffff;
+bool isn[100000008];
+int p[10000005], cnt, n, q;
+signed main()
 {
-    ios::sync_with_stdio(false);
-    cin >> n >> m;
-    s[1] = true;
-    for (int i = 1; i <= n; ++i)
+    std::ios::sync_with_stdio(false);
+    std::cin >> n >> q;
+    for (int i = 2; i <= n; ++i)
     {
-        if (!s[i])
-        {
+        if (!isn[i])
             p[++cnt] = i;
-        }
-        for (int j = 1; j <= cnt; ++j)
+        for (int j = 1; j <= cnt && i * p[j] <= n; ++j)
         {
-            if (i * p[j] > n)
-            {
-                break;
-            }
-            s[i * p[j]] = true;
+            isn[i * p[j]] = true;
             if (i % p[j] == 0)
-            {
                 break;
-            }
         }
     }
-    while (m > 0)
+    while (q--)
     {
-        --m;
-        cin >> p[0];
-        cout << p[p[0]] << endl;
+        static int rk;
+        std::cin >> rk;
+        std::cout << p[rk] << std::endl;
     }
     return 0;
 }

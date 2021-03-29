@@ -26,7 +26,7 @@ signed main()
 a:
     // system("mkdata.exe > data.in");
     int t = clock();
-    int back = system("P4055.exe < data.in > data.out");
+    int back = system("P2408_SAM.exe < data.in > data.out");
     if (back)
     {
         cout << "Runtime Error!" << endl;
@@ -38,8 +38,9 @@ a:
         cout << "Time Limit Exceeded!" << endl;
         return 0;
     }
-    // system("std.exe < data.in > data.ans");
-    // if (!system("fc data.out data.ans"))
+    system("P2408_SA.exe < data.in > data.ans");
+    if (!system("fc data.out data.ans"))
+    // if (system("check.exe"))
     {
         goto a;
     }

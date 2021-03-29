@@ -26,7 +26,7 @@ signed main()
 a:
     system("mkdata.exe > data.in");
     int t = clock();
-    int back = system("SP687.exe < data.in > data.out");
+    int back = system("SP8222_SAM.exe < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;
@@ -38,7 +38,7 @@ a:
         cout << "Time Limit Exceeded!" << endl;
         return 0;
     }
-    system("std.exe < data.in > data.ans");
+    system("SP8222_SA.exe < data.in > data.ans");
     if (!system("fc data.out data.ans"))
     {
         goto a;

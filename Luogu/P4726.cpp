@@ -18,209 +18,239 @@
 #include <set>
 #include <ctime>
 // #define debug
-#define int long long
+#define int unsigned long long
 #define double long double
-using namespace std;
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
 const int MOD = 998244353;
 const int W = 3;
-const int power(int A, int B)
+int T, s, k, I[1 << 22], fact[1 << 22];
+int power(int A, int B)
 {
     int res = 1;
     while (B)
     {
         if (B & 1)
-        {
             res = res * A % MOD;
-        }
         B >>= 1;
         A = A * A % MOD;
     }
     return res;
 }
-template <class T>
-void print(const T &x)
+const int MAXLEN = 21;
+int omega[1 << MAXLEN << 1];
+std::vector<int> rev;
+class polynomial : public std::vector<int>
 {
-    for (auto i : x)
+protected:
+    const static int EXP2[31];
+    static int init_omega()
     {
-        cout << i << ' ';
+        const int w = power(W, (MOD - 1) / (1 << MAXLEN));
+        omega[1 << MAXLEN] = 1;
+        for (int i = 1 << MAXLEN; ++i != 1 << MAXLEN << 1;)
+            omega[i] = omega[i - 1] * w % MOD;
+        for (int i = MAXLEN; i--;)
+            for (int j = 1 << i; j != 1ull << i << 1; ++j)
+                omega[j] = omega[j << 1];
+        return UINT64_MAX / (MOD * MOD) - 1;
     }
-    cout << endl;
-}
-int n, LOG[32];
-vector<int> A, B, I(1 << 20);
-void NTT(vector<int> &x, const int &type = 1)
-{
-    static vector<int> rev;
-    if (x.size() != rev.size())
+    static void init_rev(size_t X)
     {
-        rev.resize(x.size());
-        for (int i = 0; i < rev.size(); ++i)
-        {
-            rev[i] = rev[i >> 1] >> 1 | (i & 1) * rev.size() / 2;
-        }
+        if (rev.size() == X)
+            return;
+        rev.resize(X);
+        int tmp = X >> 1;
+        for (int i = 0; i != X; ++i)
+            rev[i] = rev[i >> 1] >> 1 | (i & 1) * tmp;
     }
-    for (int i = 0; i < x.size(); ++i)
+    static bool check_n(int _n) { return (_n & -_n) == _n; }
+    static int enlarge_n(int _n) { return check_n(_n) ? _n : *std::lower_bound(EXP2, EXP2 + 31, _n); }
+
+public:
+    polynomial() {}
+    polynomial(const size_t &Size) : std::vector<int>(Size) {}
+    polynomial(const size_t &Size, const int &Value) : std::vector<int>(Size, Value) {}
+    template <class InputIterator>
+    polynomial(InputIterator first, InputIterator last) : std::vector<int>(first, last) {}
+    void DFT(int N = -1)
     {
-        if (i < rev[i])
+        int _N = enlarge_n(~N ? N : size());
+        resize(_N);
+        static int *F;
+        F = data();
+        init_rev(_N);
+        for (int i = 0; i != _N; ++i)
+            if (i < rev[i])
+                std::swap(F[i], F[rev[i]]);
+        for (int i = 1; i != _N; i <<= 1)
         {
-            swap(x[i], x[rev[i]]);
-        }
-    }
-    for (int i = 1; i < x.size(); i <<= 1)
-    {
-        int w1 = power(W, (MOD - 1) + type * (MOD - 1) / i / 2);
-        for (int j = 0; j < x.size(); j += i << 1)
-        {
-            for (int k = 0, w = 1; k < i; ++k, w = w * w1 % MOD)
+            const static int FLUSH_TIME = init_omega();
+            if (i & (1 << FLUSH_TIME))
+                for (int j = 0; j != _N; ++j)
+                    F[j] %= MOD;
+            for (int j = 0; j != _N; j += i << 1)
             {
-                int Y1 = x[j | k], Y2 = w * x[i | j | k] % MOD;
-                x[j | k] = (Y1 + Y2) % MOD;
-                x[i | j | k] = (Y1 - Y2 + MOD) % MOD;
+                int *W = omega + i + i, *Y0 = F + j, *Y1 = F + i + j;
+                for (int k = 0; k != i; ++k, ++W, ++Y0, ++Y1)
+                {
+                    int T = *Y1 * *W % MOD;
+                    *Y1 = *Y0 + MOD - T;
+                    *Y0 += T;
+                }
             }
         }
+        for (int i = 0; i != _N; ++i)
+            F[i] %= MOD;
     }
-}
-void INTT(vector<int> &x)
+    void IDFT(int N = -1)
+    {
+        int _N = enlarge_n(N = ~N ? N : size());
+        DFT(_N);
+        std::reverse(data() + 1, data() + _N);
+        int T = (MOD - MOD / _N) * I[MOD % _N] % MOD;
+        for (int i = 0; i != _N; ++i)
+            at(i) = at(i) * T % MOD;
+        resize(N);
+    }
+
+public:
+    friend polynomial MUL(polynomial A, polynomial B, int N = -1)
+    {
+        if (A.empty() || B.empty() || !N)
+            return polynomial(N);
+        N = ~N ? N : A.size() + B.size() - 1;
+        if (A.size() > N)
+            A.resize(N);
+        if (B.size() > N)
+            B.resize(N);
+        int tmplen = A.size() + B.size() - 1;
+        A.DFT(tmplen);
+        B.DFT(tmplen);
+        for (int i = 0; i != A.size(); ++i)
+            A[i] = A[i] * B[i] % MOD;
+        A.IDFT();
+        A.resize(N);
+        return A;
+    }
+    friend polynomial INV(polynomial X, int N = -1)
+    {
+        if (X.empty() || !N)
+            return polynomial(N);
+        int _N = enlarge_n(N = ~N ? N : X.size());
+        X.resize(_N);
+        polynomial res(1, power(X.front(), MOD - 2));
+        for (int i = 1; i != _N; i <<= 1, res.resize(i))
+        {
+            polynomial tmp(X.data(), X.data() + i + i);
+            res.DFT(i << 2);
+            tmp.DFT(i << 2);
+            for (int j = 0; j != i << 2; ++j)
+                res[j] = res[j] * (2 + MOD - tmp[j] * res[j] % MOD) % MOD;
+            res.IDFT();
+        }
+        res.resize(N);
+        return res;
+    }
+    friend polynomial QIUDAO(polynomial X)
+    {
+        for (int i = 1; i != X.size(); ++i)
+            X[i - 1] = X[i] * i % MOD;
+        X.pop_back();
+        return X;
+    }
+    friend polynomial JIFEN(polynomial X)
+    {
+        X.push_back(0);
+        for (int i = X.size(); --i;)
+            X[i] = X[i - 1] * I[i] % MOD;
+        X[0] = 0;
+        return X;
+    }
+    friend polynomial LN(polynomial X, int N = -1)
+    {
+        N = ~N ? N : X.size();
+        polynomial res = JIFEN(MUL(QIUDAO(X), INV(X, N), N));
+        res.resize(N);
+        return res;
+    }
+    friend polynomial EXP(polynomial X, int N = -1)
+    {
+        int _N = enlarge_n(N = ~N ? N : X.size());
+        polynomial res(1, 1);
+        for (int i = 1; i != _N; i <<= 1)
+        {
+            polynomial tmp = LN(res, i + i);
+            --tmp[0];
+            for (int j = 0, len = std::min(tmp.size(), X.size()); j != len; ++j)
+                tmp[j] = (X[j] + MOD - tmp[j]) % MOD;
+            res = MUL(res, tmp, i + i);
+            // print(res);
+        }
+        res.resize(N);
+        return res;
+    }
+    friend void print(const polynomial &X)
+    {
+        for (auto i : X)
+            std::cout << ' ' << i;
+        std::cout << std::endl;
+    }
+};
+const int polynomial::EXP2[31] = {1 << 000, 1 << 001, 1 << 002, 1 << 003, 1 << 004, 1 << 005, 1 << 006, 1 << 007,
+                                  1 << 010, 1 << 011, 1 << 012, 1 << 013, 1 << 014, 1 << 015, 1 << 016, 1 << 017,
+                                  1 << 020, 1 << 021, 1 << 022, 1 << 023, 1 << 024, 1 << 025, 1 << 026, 1 << 027,
+                                  1 << 030, 1 << 031, 1 << 032, 1 << 033, 1 << 034, 1 << 035, 1 << 036};
+polynomial A;
+int n;
+polynomial operator*(int A, polynomial B)
 {
-    NTT(x, -1);
-    for (int i = 0, inv = power(x.size(), MOD - 2); i < x.size(); ++i)
-    {
-        (x[i] *= inv) %= MOD;
-    }
+    for (int i = 0; i < B.size(); ++i)
+        B[i] = B[i] * A % MOD;
+    return B;
 }
-const vector<int> operator*(const vector<int> &x, const vector<int> &y)
+polynomial operator*(polynomial A, polynomial B)
 {
-    vector<int> res(*lower_bound(LOG, LOG + 32, x.size() + y.size())), X(x), Y(y);
-    X.resize(res.size());
-    Y.resize(res.size());
-    NTT(X);
-    NTT(Y);
-    for (int i = 0; i < res.size(); ++i)
-    {
-        res[i] = X[i] * Y[i] % MOD;
-    }
-    INTT(res);
-    return res;
+    return MUL(A, B);
 }
-const vector<int> operator+(const vector<int> &x, const vector<int> &y)
+polynomial power(polynomial A, int B)
 {
-    vector<int> res(max(x.size(), y.size()));
-    for (int i = 0; i < x.size(); ++i)
+    A.resize(1000000);
+    polynomial res(1, 1);
+    res.resize(1000000);
+    while (B)
     {
-        res[i] += x[i];
+        if (B & 1)
+        {
+            res = res * A;
+            res.resize(1000000);
+        }
+        B >>= 1;
+        A = A * A;
+        A.resize(1000000);
     }
-    for (int i = 0; i < y.size(); ++i)
-    {
-        res[i] += y[i];
-    }
-    for (int i = 0; i < res.size(); ++i)
-    {
-        res[i] %= MOD;
-    }
-    return res;
-}
-const vector<int> operator+(const vector<int> &x, const int &y)
-{
-    if (x.empty())
-        return vector<int>(1, y);
-    vector<int> res(x);
-    (res.front() += y) %= MOD;
-    return res;
-}
-const vector<int> operator-(const vector<int> &x, const vector<int> &y)
-{
-    vector<int> res(max(x.size(), y.size()));
-    for (int i = 0; i < x.size(); ++i)
-    {
-        res[i] += x[i];
-    }
-    for (int i = 0; i < y.size(); ++i)
-    {
-        res[i] -= y[i];
-    }
-    for (int i = 0; i < res.size(); ++i)
-    {
-        (res[i] += MOD) %= MOD;
-    }
-    return res;
-}
-const vector<int> operator*(const vector<int> &x, const int &y)
-{
-    vector<int> res(x);
-    for (int i = 0; i < res.size(); ++i)
-    {
-        (res[i] *= y) %= MOD;
-    }
-    return res;
-}
-const vector<int> INV(const vector<int> &x)
-{
-    vector<int> res(1, power(x.front(), MOD - 2));
-    for (int i = 1; i < x.size(); i <<= 1, res.resize(i))
-    {
-        res = res * 2 - vector<int>(x.data(), x.data() + i + i) * res * res;
-    }
-    res.resize(x.size());
-    return res;
-}
-const vector<int> QIUDAO(const vector<int> &x)
-{
-    if (x.empty())
-    {
-        return vector<int>();
-    }
-    vector<int> res(x.size() - 1);
-    for (int i = 1; i < x.size(); ++i)
-    {
-        res[i - 1] = x[i] * i % MOD;
-    }
-    return res;
-}
-const vector<int> JIFEN(const vector<int> &x)
-{
-    vector<int> res(x.size() + 1);
-    for (int i = 1; i < res.size(); ++i)
-    {
-        res[i] = x[i - 1] * I[i] % MOD;
-    }
-    return res;
-}
-const vector<int> LN(const vector<int> &x)
-{
-    vector<int> res = JIFEN(QIUDAO(x) * INV(x));
-    res.resize(x.size());
-    return res;
-}
-const vector<int> EXP(const vector<int> &x)
-{
-    vector<int> res({1, 0});
-    for (int i = 1; i < x.size(); i <<= 1)
-    {
-        res = res * (vector<int>(x.data(), x.data() + i + i) - LN(res) + 1);
-    }
-    res.resize(n);
     return res;
 }
 signed main()
 {
-    ios::sync_with_stdio(false);
-    for (int i = 0; i < 32; ++i)
-    {
-        LOG[i] = 1 << i;
-    }
-    for (int i = 1; i < I.size(); ++i)
-    {
-        I[i] = power(i, MOD - 2);
-    }
-    cin >> n;
-    A.resize(*lower_bound(LOG, LOG + 32, n));
-    for (int i = 0; i < n; ++i)
-    {
-        cin >> A[i];
-    }
-    print(EXP(A));
+    std::ios::sync_with_stdio(false);
+    I[1] = 1;
+    for (int i = 2; i != 1 << 22; ++i)
+        I[i] = (MOD - MOD / i) * I[MOD % i] % MOD;
+    std::cin >> n;
+    A.resize(n);
+    for (int i = 0; i != n; ++i)
+        std::cin >> A[i];
+    freopen("data.out", "w", stdout);
+    polynomial F = A, G = power(F, 998244352);
+    for (int i = 0; i < G.size(); ++i)
+        std::cout << G[i] << ' ';
+    std::cout << std::endl;
+    return 0;
+    A = EXP(A);
+    for (int i = 0; i != n; ++i)
+        std::cout << A[i] << ' ';
+    std::cout << std::endl;
     return 0;
 }
