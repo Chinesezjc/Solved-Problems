@@ -23,19 +23,11 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-const int MAXN = 510;
-
-int n, m;
-int v[MAXN][MAXN];
-
-int lm[MAXN], rm[MAXN], d[MAXN];
-int matchl[MAXN], matchr[MAXN], lst[MAXN];
-bool visl[MAXN], visr[MAXN];
-
-std::queue<int> que;
+int n, m, v[505][505], lm[505], rm[505], d[505], lst[505], matchl[505], matchr[505];
+bool visl[505], visr[505];
 void Match(int now)
 {
-    int tmp;
+    static int tmp;
     while (now)
     {
         tmp = matchl[lst[now]];
@@ -46,14 +38,11 @@ void Match(int now)
 }
 void bfs(int s)
 {
-    memset(visl, 0, sizeof(visl));
-    memset(visr, 0, sizeof(visr));
-    std::fill(d + 1, d + n + 1, INF);
-
-    while (!que.empty())
-        que.pop();
+    std::fill(visl + 1, visl + 1 + n, false);
+    std::fill(visr + 1, visr + 1 + n, false);
+    std::fill(d + 1, d + 1 + n, INF);
+    std::queue<int> que;
     que.push(s);
-
     while (true)
     {
         while (!que.empty())
@@ -92,7 +81,7 @@ void bfs(int s)
         for (int i = 1; i <= n; ++i)
             if (!visr[i] && !d[i])
             {
-                visr[i] = 1;
+                visr[i] = true;
                 if (!matchr[i])
                     return Match(i);
                 else
@@ -105,10 +94,14 @@ int KM()
     for (int i = 1; i <= n; ++i)
         lm[i] = *std::max_element(v[i] + 1, v[i] + 1 + n);
     for (int i = 1; i <= n; ++i)
+    {
         bfs(i);
+    }
     int res = 0;
     for (int i = 1; i <= n; ++i)
+    {
         res += lm[i] + rm[i];
+    }
     return res;
 }
 signed main()

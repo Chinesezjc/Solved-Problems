@@ -1,5 +1,6 @@
 //This Code was made by Chinese_zjc_.
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <algorithm>
 #include <vector>
@@ -24,22 +25,23 @@ signed main()
 {
     ios::sync_with_stdio(false);
 a:
-    // system("mkdata.exe > data.in");
+    system("mkdata.exe > bracket.in");
+    system("boom.exe");
+    cout << "Running..." << endl;
     int t = clock();
-    int back = system("P4055.exe < data.in > data.out");
-    if (back)
+    int back = system("bracket.exe");
+    if (back != 0)
     {
         cout << "Runtime Error!" << endl;
         return 0;
     }
     cout << "use time:" << clock() - t << "ms" << endl;
-    if (clock() - t > 1000)
+    if (clock() - t > 5000)
     {
         cout << "Time Limit Exceeded!" << endl;
         return 0;
     }
-    // system("std.exe < data.in > data.ans");
-    // if (!system("fc data.out data.ans"))
+    if (!system("fc bracket.out bracket.ans"))
     {
         goto a;
     }

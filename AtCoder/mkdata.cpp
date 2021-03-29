@@ -26,29 +26,26 @@ using namespace std;
 unsigned int seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
 vector<int> in;
-int n = 2000, m, sum = 100, q = 200000, a[500005], s;
+int n = 2000, h = 100000000, s;
+const int a[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+std::vector<int> b;
+void dfs(int v, int now)
+{
+    if (v > 1e9 || now >= 10)
+        return;
+    b.push_back(v);
+    for (int i = now; i < 10; ++i)
+        dfs(v * a[i], i);
+}
 signed main()
 {
     ios::sync_with_stdio(false);
     cout << n << endl;
-    for (int i = 1; i <= n << 1; ++i)
+    dfs(1, 0);
+    std::sort(b.begin(), b.end(), std::greater<int>());
+    for (int i = 1; i <= n; ++i)
     {
-        a[i] = Rand() % 100000 + 1;
-        s ^= a[i];
-        cout << a[i] << endl;
+        std::cout << b[i] << " \n"[i == n];
     }
-    // m = Rand() % (n-1) + 2;
-    // cout << n << ' ' << m << endl;
-    // for (int i = 1; i <= n; ++i)
-    // {
-    //     in.push_back(i);
-    // }
-    // for (int i = 1; i <= n; ++i)
-    // {
-    //     int tmp = Rand() % in.size();
-    //     cout << in[tmp] << " \n"[i == n];
-    //     swap(in[tmp], in.back());
-    //     in.pop_back();
-    // }
     return 0;
 }

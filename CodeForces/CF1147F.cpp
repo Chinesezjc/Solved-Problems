@@ -23,19 +23,59 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-int T, n, m, a[2005][2005], husband[2005], st;
+int T, n, m, a[2005][2005], st, nxt[4005], rk[2005][2005];
 char c;
-std::vector<int> rk[2005];
-void work(int now)
+std::vector<int> pos[2005];
+std::queue<int> que;
+void init(bool t)
 {
-    while (husband[rk[now].back()] && a[husband[rk[now].back()]][rk[now].back()] > a[now][rk[now].back()])
+    memset(nxt, 0, sizeof(nxt));
+    for (int i = 1; i <= n; ++i)
     {
-        rk[now].pop_back();
+        que.push(i);
+        pos[i].clear();
+        for (int j = 1; j <= n; ++j)
+            pos[i].push_back(j);
+        std::sort(pos[i].begin(), pos[i].end(), [&](const int &A, const int &B) { return (a[i][A] > a[i][B]) ^ t; });
     }
-    int lst = husband[rk[now].back()];
-    husband[rk[now].back()] = now;
-    if (lst)
-        work(lst);
+    for (int i = 1; i <= n; ++i)
+    {
+        static std::vector<int> sa;
+        sa.clear();
+        for (int j = 1; j <= n; ++j)
+            sa.push_back(j);
+        std::sort(sa.begin(), sa.end(), [&](const int &A, const int &B) { return (a[A][i] > a[B][i]) ^ t; });
+        for (int j = 1; j <= n; ++j)
+            rk[i][sa[j - 1]] = j;
+    }
+    // for (int i = 1; i <= n; ++i)
+    // {
+    //     for (int j = 1; j <= n; ++j)
+    //     {
+    //         std::cout << rk[i][j] << ' ';
+    //     }
+    //     std::cout << std::endl;
+    // }
+    while (!que.empty())
+    {
+        int now = que.front();
+        que.pop();
+        while (!nxt[now])
+        {
+            int to = pos[now].back();
+            pos[now].pop_back();
+            if (!nxt[to + n] || rk[to][now] < rk[to][nxt[to + n]])
+            {
+                if (nxt[to + n])
+                {
+                    nxt[nxt[to + n]] = 0;
+                    que.push(nxt[to + n]);
+                }
+                nxt[to + n] = now;
+                nxt[now] = to + n;
+            }
+        }
+    }
 }
 signed main()
 {
@@ -46,24 +86,13 @@ signed main()
         std::cin >> n;
         for (int i = 1; i <= n; ++i)
         {
-            rk[i].clear();
-            husband[i] = 0;
             for (int j = 1; j <= n; ++j)
             {
                 std::cin >> a[i][j];
-                rk[i].push_back(j);
             }
         }
         std::cout << "B" << std::endl;
         std::cin >> c >> st;
-        if (st > n)
-            for (int i = 1; i <= n; ++i)
-            {
-                for (int j = i + 1; j <= n; ++j)
-                {
-                    std::swap(a[i][j], a[j][i]);
-                }
-            }
         if (c == 'D')
             for (int i = 1; i <= n; ++i)
             {
@@ -72,22 +101,15 @@ signed main()
                     a[i][j] = -a[i][j];
                 }
             }
-        for (int i = 1; i <= n; ++i)
+        init(st > n);
+        // for (int i = 1; i <= n + n; ++i)
+        // {
+        //     std::cout << nxt[i] << " \n"[i == n + n];
+        // }
+        while (~st)
         {
-            std::sort(rk[i].begin(), rk[i].end(), [&](const int &A, const int &B) { return a[i][A] < a[i][B]; });
-        }
-        for (int i = 1; i <= n; ++i)
-        {
-            work(i);
-            // std::cout << i << std::endl;
-        }
-        for (int i = 1; i <= n; ++i)
-        {
-            std::cout << husband[i] << std::endl;
-        }
-        for (; ~st; std::cin >> st)
-        {
-            std::cout << *std::find(husband + 1, husband + 1 + n, st > n ? st - n : st) + (st > n ? 0 : n) << std::endl;
+            std::cout << nxt[st] << std::endl;
+            std::cin >> st;
         }
     }
     return 0;

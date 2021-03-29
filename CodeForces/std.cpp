@@ -1,91 +1,112 @@
 #include <bits/stdc++.h>
+#define ll long long
 using namespace std;
-namespace FGF
+const ll N = 1e6 + 5;
+
+ll read()
 {
-	int n, m;
-	const int N = 55;
-	int a[N][N], rk[N][N], pos[N], nxt[N << 1];
-	char s[5];
-	vector<int> g[N], t;
-	queue<int> q;
-	void solve(int op)
+	ll s = 0;
+	char c = getchar(), lc = '+';
+	while (c < '0' || '9' < c)
+		lc = c, c = getchar();
+	while ('0' <= c && c <= '9')
+		s = s * 10 + c - '0', c = getchar();
+	return lc == '-' ? -s : s;
+}
+void write(ll x)
+{
+	if (x < 0)
 	{
-		memset(pos, 0, sizeof(pos)), memset(nxt, 0, sizeof(nxt));
-		for (int i = 1; i <= n; i++)
+		putchar('-');
+		x = -x;
+	}
+	if (x < 10)
+		putchar(x + '0');
+	else
+	{
+		write(x / 10);
+		putchar(x % 10 + '0');
+	}
+}
+void print(ll x, char c = '\n')
+{
+	write(x);
+	putchar(c);
+}
+ll k1, k2;
+void exgcd(ll x, ll y)
+{
+	if (y == 0)
+		return k1 = 1, k2 = 0, void();
+	exgcd(y, x % y);
+	ll X = k1, Y = k2;
+	k1 = Y;
+	k2 = X - x / y * Y;
+}
+ll gcd(ll x, ll y)
+{
+	return y == 0 ? x : gcd(y, x % y);
+}
+ll lcm(ll x, ll y)
+{
+	return x / gcd(x, y) * y;
+}
+ll a[N], b[N], x[N], y[N], cnt = 0;
+ll t[N], cntt = 0;
+
+signed main()
+{
+	ll n = read(), m = read(), k = read();
+	for (ll i = 1; i <= n; i++)
+		a[read()] = i;
+	for (ll i = 1; i <= m; i++)
+		b[read()] = i;
+	for (ll i = 1; i <= 2 * max(n, m); i++)
+		if (a[i] && b[i])
 		{
-			q.push(i);
-			g[i].clear();
-			for (int j = 1; j <= n; j++)
-				g[i].push_back(j);
-			sort(g[i].begin(), g[i].end(), [&](int x, int y) { return (a[i][x] < a[i][y]) ^ op; });
+			++cnt;
+			x[cnt] = a[i];
+			y[cnt] = b[i];
 		}
-		for (int i = 1; i <= n; i++)
+	for (ll i = 1; i <= cnt; i++)
+	{
+		ll x = ::x[i], y = ::y[i];
+		ll g = gcd(n, m), mm = m / g;
+		if ((y - x) % g)
+			continue;
+		exgcd(n, m);
+		//		print(k1,' ');print(k2);
+		k1 *= (y - x) / g;
+		k1 = (k1 % mm + mm) % mm;
+		t[++cntt] = k1 * n + x;
+	}
+	ll ans = (k - 1) / (lcm(n, m) - cntt) * lcm(n, m);
+	k = (k - 1) % (lcm(n, m) - cntt) + 1;
+	sort(t + 1, t + 1 + cntt);
+	//	for (ll i=1;i<=cntt;i++) print(t[i]);
+	for (ll i = 1; i <= cntt; i++)
+	{
+		// std::cout << t[i] << " \n"[i == cntt];
+		if (t[i] - t[i - 1] - 1 < k)
 		{
-			t.clear();
-			for (int j = 1; j <= n; j++)
-				t.push_back(j);
-			sort(t.begin(), t.end(), [&](int x, int y) { return (a[x][i] > a[y][i]) ^ op; });
-			for (int j = 0; j < n; j++)
-				rk[i][t[j]] = j + 1;
+			k -= t[i] - t[i - 1] - 1;
+			ans += t[i] - t[i - 1];
 		}
-		while (q.size())
+		else
 		{
-			int u = q.front();
-			q.pop();
-			while (!nxt[u])
-			{
-				int v = g[u][pos[u]++];
-				if (!nxt[v + n] || rk[v][nxt[v + n]] > rk[v][u])
-				{
-					nxt[nxt[v + n]] = 0;
-					if (nxt[v + n])
-						q.push(nxt[v + n]);
-					nxt[v + n] = u, nxt[u] = v + n;
-				}
-			}
-		}
-		for (int i = 1; i <= n; ++i)
-		{
-			std::cout << nxt[i] << std::endl;
-		}
-		for (int i = 1; i <= n; ++i)
-		{
-			for (int j = 1; j <= n; ++j)
-			{
-				std::cout << a[i][j] << ' ';
-			}
-			std::cout << std::endl;
+			ans += k;
+			k = 0;
 		}
 	}
-	void work()
-	{
-		cin >> m;
-		while (m--)
-		{
-			cin >> n;
-			for (int i = 1; i <= n; i++)
-				for (int j = 1; j <= n; j++)
-					scanf("%d", &a[i][j]);
-			cout << "B" << endl;
-			cin >> s;
-			if (s[0] == 'D')
-			{
-				for (int i = 1; i <= n; i++)
-					for (int j = 1; j <= n; j++)
-						a[i][j] = -a[i][j];
-			}
-			int x;
-			cin >> x;
-			solve(x > n);
-			cout << nxt[x] << endl;
-			cin >> x;
-			while (~x)
-				cout << nxt[x] << endl, cin >> x;
-		}
-	}
-} // namespace FGF
-int main()
-{
-	FGF::work();
+	//	print(ans,',');print(k);
+	ans += k;
+	print(ans);
+
 	return 0;
 }
+/*
+8 3 41
+1 6 4 3 5 7 2 8
+1 3 2
+
+*/
