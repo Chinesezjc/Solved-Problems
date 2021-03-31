@@ -23,22 +23,24 @@
 using namespace std;
 unsigned int seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
-int n = 20, k = /*Rand() % (n >> 1) + 1*/ 2, L = 1000000000;
-map<int, map<int, bool>> d;
+int n = Rand() % 5 + 1, m = Rand() % 5 + 1, k = Rand() % 10 + 1;
+std::vector<int> A, B;
 signed main()
 {
     ios::sync_with_stdio(false);
-    cout << n << ' ' << k << ' ' << L << endl;
+    cout << n << ' ' << m << ' ' << k << std::endl;
     for (int i = 1; i <= n; ++i)
-    {
-        int x = Rand() % L, y = Rand() % L;
-        while (d[x][y])
-        {
-            x = Rand() % L;
-            y = Rand() % L;
-        }
-        cout << x << ' ' << y << ' ' << Rand() % k + 1 << endl;
-        d[x][y] = true;
-    }
+        A.push_back(i);
+    for (int i = 1; i <= m; ++i)
+        B.push_back(i);
+    std::random_shuffle(A.begin(), A.end());
+    std::random_shuffle(B.begin(), B.end());
+    ++B.back();
+    for (auto i : A)
+        std::cout << i << " ";
+    std::cout << std::endl;
+    for (auto i : B)
+        std::cout << i << ' ';
+    std::cout << std::endl;
     return 0;
 }

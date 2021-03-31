@@ -29,7 +29,7 @@ a:
     system("std.exe < data.in > data.ans");
     cout << "Running..." << endl;
     int t = clock();
-    int back = system("CF1396D < data.in > data.out");
+    int back = system("CF1500B < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;
@@ -41,12 +41,9 @@ a:
         cout << "Time Limit Exceeded!" << endl;
         return 0;
     }
-    system("check.exe");
-    ifstream in("data.log");
-    in >> ans;
-    if (ans == "OK")
+    if (!system("fc data.out data.ans"))
     {
-        cout << "OK" << endl;
+        std::cout << "OK" << std::endl;
         goto a;
     }
     cout << "Wrong Answer!" << endl;

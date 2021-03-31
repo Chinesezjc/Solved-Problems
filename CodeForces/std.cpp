@@ -203,3 +203,9 @@ int main()
 	DreamLolita::solve();
 	return 0;
 }
+/*
+8 3 41
+1 6 4 3 5 7 2 8
+1 3 2
+
+*/
