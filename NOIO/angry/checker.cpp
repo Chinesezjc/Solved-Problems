@@ -23,10 +23,11 @@ string ans;
 signed main()
 {
     ios::sync_with_stdio(false);
+    int t, back;
 a:
-    system("mkdata.exe > data.in");
-    int t = clock();
-    int back = system("P4516.exe < data.in > data.out");
+    system("mkdata.exe > angry.in");
+    t = clock();
+    back = system("angry.exe");
     if (back)
     {
         cout << "Runtime Error!" << endl;
@@ -38,8 +39,10 @@ a:
         cout << "Time Limit Exceeded!" << endl;
         return 0;
     }
-    system("std.exe < data.in > data.ans");
-    if (!system("fc data.out data.ans"))
+    t = clock();
+    system("boom.exe");
+    cout << "use time:" << clock() - t << "ms" << endl;
+    if (!system("fc angry.out angry.ans"))
     // if (system("check.exe"))
     {
         goto a;
