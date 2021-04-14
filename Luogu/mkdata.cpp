@@ -23,16 +23,14 @@
 using namespace std;
 unsigned int seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
-int n = 10;
+int n = 3, m = 3;
 signed main()
 {
     ios::sync_with_stdio(false);
-    int s = (int)Rand() % 50, t = (int)Rand() % 50;
-    while (s >= t)
-        s = (int)Rand() % 50, t = (int)Rand() % 50;
-    std::cout << n << ' ' << s << ' ' << t << std::endl;
-    std::cout << Rand() % 50 + 1 << ' ' << s << std::endl;
-    for (int i = 2; i <= n; ++i)
-        std::cout << Rand() % 50 + 1 << ' ' << (int)Rand() % 50 << std::endl;
+    std::cout << n << ' ' << m << std::endl;
+    for (int i = 1; i <= n; ++i)
+        std::cout << Rand() % 10 + 1 << " \n"[i == n];
+    for (int i = 1; i <= m; ++i)
+        std::cout << Rand() % n + 1 << " " << Rand() % 10 + 1 << std::endl;
     return 0;
 }
