@@ -23,14 +23,26 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-int n, v[525015], fa[21][525015], depth[525015], cf[525015], ans, lg[1 << 21];
+int n, v[525015], fa[21][525015], depth[525015], cf[525015], ans, lg[1 << 21], dfn[525015], cnt;
 bool g[21][525015];
+std::vector<int> son[525015];
 int lowbit(int now) { return now & -now; }
 void add(int now, int len, int val)
 {
     // std::cout << "add " << now << " " << len << " " << val << std::endl;
     cf[now] ^= val;
     cf[fa[len][now]] ^= val;
+}
+void dfs(int now)
+{
+    dfn[++cnt] = now;
+    for (int i = 1; 1 << i <= depth[now]; ++i)
+        fa[i][now] = fa[i - 1][fa[i - 1][now]];
+    for (int i = 0; i != (int)son[now].size(); ++i)
+    {
+        depth[son[now][i]] = depth[now] + 1;
+        dfs(son[now][i]);
+    }
 }
 signed main()
 {
@@ -41,10 +53,9 @@ signed main()
     for (int i = 2; i <= n; ++i)
     {
         std::cin >> fa[0][i];
-        depth[i] = depth[fa[0][i]] + 1;
-        for (int j = 1; 1 << j <= depth[i]; ++j)
-            fa[j][i] = fa[j - 1][fa[j - 1][i]];
+        son[fa[0][i]].push_back(i);
     }
+    dfs(1);
     for (int i = 0; i != 21; ++i)
         lg[1 << i] = i;
     for (int i = 1; i != 1 << 21; ++i)
@@ -63,8 +74,9 @@ signed main()
     // for (int i = 1; i <= n; ++i)
     //     for (int j = 1; j <= 20; ++j)
     //         std::cout << g[j][i] << " \n"[j == 20];
-    for (int i = n; i; --i)
+    for (int k = n; k; --k)
     {
+        int i = dfn[k];
         for (int j = 20; j; --j)
             if (g[j][i])
             {

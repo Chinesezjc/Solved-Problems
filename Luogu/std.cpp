@@ -1,192 +1,130 @@
-#include <cstdio>
+#include <algorithm>
 #include <iostream>
 #include <cstring>
-#include <algorithm>
+#include <cstdio>
 #include <vector>
-#define PB push_back
-#define MP make_pair
-#define PII pair<int, int>
-#define FIR first
-#define SEC second
+#include <queue>
+#define rg register int
 #define ll long long
-#define ull unsigned long long
+#define RG register
+#define il inline
 using namespace std;
-template <class T>
-inline void rd(T &x)
+
+il int gi()
 {
-    x = 0;
-    char c = getchar();
-    int f = 1;
-
-    while (!isdigit(c))
-    {
-        if (c == '-')
-            f = -1;
-
-        c = getchar();
-    }
-
-    while (isdigit(c))
-        x = x * 10 - '0' + c, c = getchar();
-
-    x *= f;
-}
-const int N = 1e5 + 10;
-const int mod = 998244353;
-inline ll Pow(ll x, int y)
-{
-    int res = 1;
-
-    for (; y; y >>= 1, x = x * (ll)x % mod)
-        if (y & 1)
-            res = res * (ll)x % mod;
-
-    return res;
-}
-inline ll Sqr(ll x)
-{
-    return x * x % mod;
-}
-struct quer
-{
-    int id, y;
-};
-vector<quer> Q[N];
-int qans[N];
-
-struct Num
-{
-    ll x, y;
-    Num(ll x = 0, ll y = 0) : x(x), y(y) {}
-    friend Num operator+(Num A, Num B)
-    {
-        return Num(A.x + B.x, A.y + B.y);
-    }
-    friend bool operator<(Num A, Num B)
-    {
-        return (ull)A.x * B.y < (ull)A.y * B.x;
-    }
-    friend bool operator>(Num A, Num B)
-    {
-        return (ull)A.x * B.y > (ull)A.y * B.x;
-    }
-    ll cal()
-    {
-        return (y % mod) * Sqr((x % mod) * Pow(y % mod, mod - 2) % mod) % mod;
-    }
-};
-ll sum[N], sum2[N], x[N];
-int n;
-int A[N], B[N], pA, pB;
-Num vA[N], vB[N];
-ll sA[N], sB[N];
-
-int ql, qr;
-void getL(int delta, int R)
-{
-    int lb = 0, rb = pA;
-
-    while (lb < rb)
-    {
-        int mid = lb + rb + 1 >> 1;
-
-        if (Num(sum[R - 1] - sum[A[mid]] + delta, R - 1 - A[mid]) > vA[mid])
-            lb = mid;
-        else
-            rb = mid - 1;
-    }
-
-    ql = lb;
-}
-void getR(int delta)
-{
-    int lb = 0, rb = pB;
-
-    while (lb < rb)
-    {
-        int mid = lb + rb + 1 >> 1;
-        getL(delta, B[mid]);
-
-        //      cout<<"QL:"<<B[mid]<<' '<<A[ql]<<' '<<sum[B[mid]-1]-sum[A[ql]]+delta<<' '<<B[mid]-1-A[ql]<<endl;
-        if (Num(sum[B[mid] - 1] - sum[A[ql]] + delta, B[mid] - 1 - A[ql]) < vB[mid])
-            lb = mid;
-        else
-            rb = mid - 1;
-    }
-
-    getL(delta, B[lb]);
-    qr = lb;
+	rg x=0,o=0;RG char ch=getchar();
+	while(ch!='-'&&(ch<'0'||'9'<ch)) ch=getchar();
+	if(ch=='-') o=1,ch=getchar();
+	while('0'<=ch&&ch<='9') x=(x<<1)+(x<<3)+ch-'0',ch=getchar();
+	return o?-x:x;
 }
 
-int solve(int delta)
+#define SZ 200010
+int n,m,fa[SZ*30],deep[SZ*30];
+// deep 存最大深度
+// fa 存 一个点在某个版本的父亲
+
+struct Tree {
+  int l,r;
+}tr[SZ*30];
+#define lson tr[rt].l
+#define rson tr[rt].r
+int Ed[SZ],tot;
+// Ed 是版本号 ， tot是节点总数（这些就是主席树啦）
+
+void build(int &rt,rg l,rg r)
 {
-    getR(delta);
-    //  cout<<A[ql]<<' '<<B[qr]<<endl;
-    return (sA[ql] + sB[qr] + (Num(sum[B[qr] - 1] - sum[A[ql]] + delta, B[qr] - 1 - A[ql])).cal()) % mod;
+	rt=++tot;
+	if(l==r)
+	{
+		fa[rt]=l;  // 初始版本 ： 父亲是自己
+    	// 就像并查集初始化每个点的父亲是它自己
+		return;
+	}
+	rg mid=l+r>>1;
+	build(lson,l,mid);
+	build(rson,mid+1,r);
 }
 
-vector<int> del[N];
+// 主席树维护的是 每一个版本 每一个点的父亲是谁
+void update(int &rt,rg last,rg l,rg r,rg pos,rg ff) //把pos的父亲改成ff
+{
+	rt=++tot;
+	if(l==r)
+	{
+		fa[rt]=ff;
+		deep[rt]=deep[last];  // deep 用于 启发式合并
+		return;
+	}
+	lson=tr[last].l;rson=tr[last].r;
+	rg mid=l+r>>1;
+	if(pos<=mid) update(lson,tr[last].l,l,mid,pos,ff);
+	else update(rson,tr[last].r,mid+1,r,pos,ff);
+}
+
+int query(rg rt,rg l,rg r,rg pos) // 询问某一个版本的一个点的父亲
+{
+	if(l==r) return rt;
+	rg mid=l+r>>1;
+	if(pos<=mid) return query(lson,l,mid,pos);
+	else return query(rson,mid+1,r,pos);
+}
+
+void add(rg rt,rg l,rg r,rg pos) // 把某一个并查集联通块中每一个点的深度加一
+{
+	if(l==r)
+	{
+		++deep[rt];
+		return;
+	}
+	rg mid=l+r>>1;
+	if(pos<=mid) add(lson,l,mid,pos);
+	else add(rson,mid+1,r,pos);
+}
+
+int find_fa(rg ed,rg x) // ed 版本编号
+{
+	rg ff=query(ed,1,n,x);  // 查询在这一版本里 一个点的父亲
+	if(x==fa[ff]) return ff;
+	return find_fa(ed,fa[ff]);  // 不带路径压缩的并查集
+}
+
 int main()
 {
-    int q;
-    rd(n), rd(q);
-
-    for (int i = 1; i <= n; ++i)
-        rd(x[i]), sum[i] = sum[i - 1] + x[i], sum2[i] = (sum2[i - 1] + Sqr(x[i])) % mod;
-
-    for (int i = 1, a, b; i <= q; ++i)
-    {
-        rd(a), rd(b);
-        Q[a].PB((quer){
-            i, b - (int)x[a]});
-    }
-
-    B[0] = n + 1;
-
-    for (int i = n; i >= 1; --i)
-    {
-        Num tmp = Num(x[i], 1);
-
-        while (pB && vB[pB] < tmp)
-        {
-            del[i].PB(B[pB]);
-            tmp = tmp + vB[pB], pB--;
-        }
-
-        B[++pB] = i, sB[pB] = (sB[pB - 1] + (vB[pB] = tmp).cal()) % mod;
-    }
-
-    printf("%lld\n", ((sum2[n] - sB[pB]) % mod + mod) % mod);
-
-    for (int i = 1; i <= n; ++i)
-    {
-        --pB;
-
-        for (int j = (int)del[i].size() - 1; j >= 0; --j)
-        {
-            B[++pB] = del[i][j];
-            sB[pB] = (sB[pB - 1] + (vB[pB] = Num(sum[B[pB - 1] - 1] - sum[B[pB] - 1], B[pB - 1] - B[pB])).cal()) % mod;
-        }
-
-        //      cout<<"solving:"<<i<<endl;
-        //      for(int i=1;i<=pA;++i) printf("(%d, %lld,%lld)",A[i],vA[i].x,vA[i].y); cout<<endl;
-        //      for(int i=1;i<=pB;++i) printf("(%d, %lld,%lld)",B[i],vB[i].x,vB[i].y); cout<<endl;
-
-        ll tsum = (sum2[n] - Sqr(x[i])) % mod;
-
-        for (int j = 0; j < Q[i].size(); ++j)
-            qans[Q[i][j].id] = (tsum + Sqr(x[i] + Q[i][j].y) - solve(Q[i][j].y)) % mod;
-
-        Num tmp = Num(x[i], 1);
-
-        while (pA && vA[pA] > tmp)
-            tmp = tmp + vA[pA], pA--;
-
-        A[++pA] = i, sA[pA] = (sA[pA - 1] + (vA[pA] = tmp).cal()) % mod;
-    }
-
-    for (int i = 1; i <= q; ++i)
-        printf("%lld\n", (qans[i] + mod) % mod);
-
-    return 0;
+	n=gi(),m=gi();
+	build(Ed[0],1,n);
+//init
+	for(rg opt,k,a,b,i=1;i<=m;++i)
+	{
+		opt=gi();
+		if(opt==1)
+		{
+			Ed[i]=Ed[i-1];
+			a=gi(),b=gi();
+			rg f1=find_fa(Ed[i],a);
+			rg f2=find_fa(Ed[i],b);
+			if(fa[f1]==fa[f2]) continue;
+			if(deep[f1]>deep[f2]) swap(f1,f2);
+			// 把大的往小的 并，保证f1儿子节点数一定是小于等于f2
+			update(Ed[i],Ed[i-1],1,n,fa[f1],fa[f2]);   // 把f1
+			if(deep[f1]==deep[f2]) add(Ed[i],1,n,fa[f2]);
+	      // 因为f2 并到了 f1 所以f1的深度要加1
+	      //我们用 启发式合并 来保证 病查集合并的复杂度
+	    }
+	    if(opt==2)
+	    {
+			k=gi();
+			Ed[i]=Ed[k];
+	    }
+	    if(opt==3)
+	    {
+			Ed[i]=Ed[i-1];
+			a=gi(),b=gi();
+			rg f1=find_fa(Ed[i],a);
+			rg f2=find_fa(Ed[i],b);
+			if(fa[f1]==fa[f2]) puts("1");
+			else puts("0");
+	    }
+	}
+  return 0;
 }

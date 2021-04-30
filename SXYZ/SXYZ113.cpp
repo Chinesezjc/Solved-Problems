@@ -29,10 +29,6 @@ int n;
 unsigned long long w[8000 / 64 + 5];
 signed main()
 {
-#ifdef debug
-    freopen("data.in", "r", stdin);
-    freopen("data.out", "w", stdout);
-#endif
     std::ios::sync_with_stdio(false);
     std::cin.tie(0);
     std::cout.tie(0);

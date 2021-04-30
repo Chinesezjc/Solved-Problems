@@ -145,7 +145,6 @@ int dfs(int root, int now)
 }
 signed main()
 {
-    // freopen("data.out", "w", stdout);
     ios::sync_with_stdio(false);
     cin >> n >> m >> k;
     for (int i = 1; i <= m; ++i)

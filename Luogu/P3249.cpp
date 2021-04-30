@@ -63,9 +63,6 @@ void init(int now)
 }
 signed main()
 {
-#ifdef debug
-    freopen("data.in", "r", stdin);
-#endif
     std::ios::sync_with_stdio(false);
     std::cin >> n >> m >> k;
     for (int i = 1; i <= n; ++i)

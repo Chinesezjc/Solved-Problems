@@ -11,8 +11,6 @@ int n,m,k,a[200001],l,ans[200001],sum;
 signed main()
 {
 	std::ios::sync_with_stdio(false);
-	freopen("ring.in","r",stdin);
-	freopen("ring.out","w",stdout);
 	cin>>n>>m;
 	for(int i=1;i<=n;++i)
 	{

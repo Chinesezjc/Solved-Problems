@@ -18,7 +18,6 @@ bool cmp(const PLAYER &A,const PLAYER &B)
 signed main()
 {
 	std::ios::sync_with_stdio(false);
-	freopen("a.in","r",stdin);
 	cin>>n>>r>>q;
 	m=n<<1;
 	for(int i=1;i<=m;++i)
