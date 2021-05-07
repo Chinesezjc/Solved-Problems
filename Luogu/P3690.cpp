@@ -40,26 +40,20 @@ private:
 
 public:
     LCT() {}
-    void pushup(int now)
-    {
-        tree[now].sum = tree[now].val;
-        for (int i = 0; i != 2; ++i)
-            tree[now].sum ^= tree[tree[now].son[i]].sum;
-    }
+    void pushup(int now) { tree[now].sum = tree[now].val ^ tree[tree[now].son[0]].sum ^ tree[tree[now].son[1]].sum; }
     void pushdown(int now)
     {
         if (tree[now].rev)
         {
             std::swap(tree[now].son[0], tree[now].son[1]);
-            for (int i = 0; i != 2; ++i)
-                if (tree[now].son[i])
-                    tree[tree[now].son[i]].rev ^= true;
+            tree[tree[now].son[0]].rev ^= true;
+            tree[tree[now].son[1]].rev ^= true;
             tree[now].rev = false;
         }
     }
     void init_splay(int now)
     {
-        if (tree[now].fa)
+        if (~query_son(now))
             init_splay(tree[now].fa);
         pushdown(now);
     }
@@ -80,11 +74,12 @@ public:
     }
     void rotate(int now)
     {
-        int fa = tree[now].fa, nowg = query_son(now);
+        int fa = tree[now].fa;
+        bool nowg = query_son(now);
         connect(tree[fa].fa, now, query_son(fa));
         connect(fa, tree[now].son[!nowg], nowg);
         connect(now, fa, !nowg);
-        pushup(now);
+        pushup(fa);
     }
     void splay(int now)
     {
@@ -132,6 +127,7 @@ public:
             return false;
         make_root(B);
         tree[B].fa = A;
+        access(B);
         return true;
     }
     bool cut(int A, int B)
@@ -146,10 +142,11 @@ public:
     int sum(int A, int B)
     {
         split(A, B);
-        _visit();
+        // std::cout << clock() << std::endl;
+        // _visit();
         pushup(B);
-        for (int i = 1; i <= n; ++i)
-            std::cout << tree[i].sum << std::endl;
+        // for (int i = 1; i <= n; ++i)
+        //     std::cout << tree[i].sum << " \n"[i == n];
         return tree[B].sum;
     }
     void modify(int pos, int val)
@@ -170,7 +167,7 @@ public:
         if (tree[now].son[0])
             _visit(tree[now].son[0]);
         if (tree[now].fa)
-            std::cout << tree[now].fa << ' ' << now << ' ' << query_son(now) << std::endl;
+            std::cout << "   " << tree[now].fa << ' ' << now << ' ' << query_son(now) << std::endl;
         if (tree[now].son[1])
             _visit(tree[now].son[1]);
     }

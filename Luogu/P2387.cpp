@@ -23,52 +23,148 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
+int n, m, ans = INF;
 struct edge
 {
     int x, y, a, b;
     friend bool operator<(const edge &A, const edge &B) { return A.a < B.a; }
 } e[100005];
-int dis[50005], ans = INF;
-size_t n, m;
-std::vector<edge> to[50005];
-std::vector<int> val;
-std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> que;
+class LinkCutTree
+{
+public:
+    class node
+    {
+    public:
+        int fa, val, max, son[2];
+        bool rev;
+        node() : fa(), val(), max(), rev() {}
+        friend bool operator<(const node &A, const node &B) { return A.val < B.val; }
+    } tree[150005];
+    LinkCutTree(){};
+    void reverse(int now) { tree[now].rev ^= true; }
+    int query_son(int now) { return tree[tree[now].fa].son[1] == now ? 1 : (tree[tree[now].fa].son[0] == now) - 1; }
+    int get_max(int A, int B, int C) { return tree[B] < tree[A] ? (tree[C] < tree[A] ? A : C)
+                                                                : (tree[C] < tree[B] ? B : C); }
+    void pushup(int now) { tree[now].max = get_max(now, tree[tree[now].son[0]].max, tree[tree[now].son[1]].max); }
+    void pushdown(int now)
+    {
+        if (tree[now].rev)
+        {
+            std::swap(tree[now].son[0], tree[now].son[1]);
+            tree[tree[now].son[0]].rev ^= true;
+            tree[tree[now].son[1]].rev ^= true;
+            tree[now].rev = false;
+        }
+    }
+    void connect(int fa, int now, int which)
+    {
+        if (fa && ~which)
+            tree[fa].son[which] = now;
+        if (now)
+            tree[now].fa = fa;
+    }
+    void rotate(int now)
+    {
+        int fa = tree[now].fa;
+        bool which = query_son(now);
+        connect(tree[fa].fa, now, query_son(fa));
+        connect(fa, tree[now].son[!which], which);
+        connect(now, fa, !which);
+        pushup(fa);
+    }
+    void init_splay(int now)
+    {
+        if (~query_son(now))
+            init_splay(tree[now].fa);
+        pushdown(now);
+    }
+    void splay(int now)
+    {
+        init_splay(now);
+        for (int fa = tree[now].fa; ~query_son(now); rotate(now), fa = tree[now].fa)
+            if (query_son(now) == query_son(fa))
+                rotate(fa);
+        pushup(now);
+    }
+    void access(int now)
+    {
+        for (int lst = 0; now; now = tree[now].fa)
+        {
+            splay(now);
+            tree[now].son[1] = lst;
+            pushup(lst = now);
+        }
+    }
+    void make_root(int now)
+    {
+        access(now);
+        splay(now);
+        reverse(now);
+    }
+    int find_root(int now)
+    {
+        access(now);
+        splay(now);
+        while (tree[now].son[0])
+            now = tree[now].son[0];
+        return now;
+    }
+    bool link(int A, int B)
+    {
+        make_root(A);
+        if (find_root(B) == A)
+            return false;
+        make_root(B);
+        tree[B].fa = A;
+        return true;
+    }
+    bool cut(int A, int B)
+    {
+        make_root(A);
+        access(B);
+        splay(B);
+        if (tree[B].son[0] != A)
+            return false;
+        tree[B].son[0] = tree[A].fa = 0;
+        pushup(B);
+        return true;
+    }
+    int max(int A, int B)
+    {
+        make_root(A);
+        access(B);
+        splay(B);
+        return tree[B].max;
+    }
+} lct;
 signed main()
 {
     std::ios::sync_with_stdio(false);
     std::cin >> n >> m;
-    for (size_t i = 0; i != m; ++i)
-    {
+    for (int i = 1; i <= m; ++i)
         std::cin >> e[i].x >> e[i].y >> e[i].a >> e[i].b;
-        val.push_back(e[i].a);
-    }
-    std::sort(e, e + m);
-    std::sort(val.begin(), val.end());
-    val.erase(std::unique(val.begin(), val.end()), val.end());
-    std::fill(dis + 2, dis + 1 + n, INF);
-    for (size_t i = 0, j = 0; i != val.size(); ++i)
+    std::sort(e + 1, e + 1 + m);
+    for (int i = 1; i <= m; ++i)
     {
-        while (j != m && e[j].a == val[i])
+        if (e[i].x == e[i].y)
+            continue;
+        // std::cout << i << ' ' << e[i].x << ' ' << e[i].y << std::endl;
+        lct.make_root(e[i].x);
+        if (lct.find_root(e[i].y) == e[i].x)
         {
-            to[e[j].x].push_back(edge{e[j].x, e[j].y, e[j].a, e[j].b});
-            to[e[j].y].push_back(edge{e[j].y, e[j].x, e[j].a, e[j].b});
-            if (dis[e[j].y] > std::max(dis[e[j].x], e[j].b))
-                que.push(std::make_pair(dis[e[j].y] = std::max(dis[e[j].x], e[j].b), e[j].y));
-            if (dis[e[j].x] > std::max(dis[e[j].y], e[j].b))
-                que.push(std::make_pair(dis[e[j].x] = std::max(dis[e[j].y], e[j].b), e[j].x));
-            ++j;
-        }
-        while (!que.empty())
-        {
-            int now = que.top().second;
-            que.pop();
-            for (size_t i = 0; i != to[now].size(); ++i)
+            int tmp = lct.max(e[i].x, e[i].y) - n;
+            if (e[tmp].b > e[i].b)
             {
-                if (dis[to[now][i].y] > std::max(dis[now], to[now][i].b))
-                    que.push(std::make_pair(dis[to[now][i].y] = std::max(dis[now], to[now][i].b), to[now][i].y));
+                lct.cut(e[tmp].x, tmp + n);
+                lct.cut(e[tmp].y, tmp + n);
             }
         }
-        ans = std::min(ans, val[i] + dis[n]);
+        lct.tree[i + n].val = e[i].b;
+        lct.link(e[i].x, i + n);
+        lct.link(e[i].y, i + n);
+        lct.make_root(1);
+        if (lct.find_root(n) == 1)
+            ans = std::min(ans, e[i].a + e[lct.max(1, n) - n].b);
     }
     std::cout << (ans == INF ? -1 : ans) << std::endl;
     return 0;
