@@ -17,14 +17,8 @@
 #include <map>
 #include <set>
 #include <ctime>
-#include <cassert>
 // #define debug
-#define int long long
-#define double long double
-using namespace std;
-const double PI = acos(-1);
-const double eps = 0.0000000001;
-const int INF = 0x3fffffffffffffff;
+int n, m;
 template <class Type>
 class LCT
 {
@@ -32,78 +26,80 @@ private:
     class node
     {
     public:
-        Type val, sum = Type();
-        bool rev = false;
-        int fa, son[2];
-        int &lson = son[0], &rson = son[1];
-        node(const Type &VAL = Type(), const int &FA = 0, const int &LSON = 0, const int &RSON = 0)
-            : val(VAL), fa(FA), son{LSON, RSON} {}
-        node(const node &tmp)
-            : val(tmp.val), sum(tmp.sum), rev(tmp.rev), fa(tmp.fa), son{tmp.lson, tmp.rson} {}
-        void swap_son() { swap(lson, rson); }
-    };
-    vector<node> g;
-    void pushdown(const int &now)
-    {
-        if (g[now].rev)
+        Type val, sum;
+        int son[2], fa;
+        bool rev;
+        node() : val(), sum(), son(), fa() {}
+        node(Type val_) : val(val_), sum(val_), son(), fa() {}
+        void clear()
         {
-            g[now].swap_son();
-            g[g[now].lson].rev ^= true;
-            g[g[now].rson].rev ^= true;
-            g[now].rev = false;
+            val = sum = Type();
+            son[0] = son[1] = fa = 0;
+        }
+    } tree[100005];
+
+public:
+    LCT() {}
+    void pushup(int now) { tree[now].sum = tree[now].val ^ tree[tree[now].son[0]].sum ^ tree[tree[now].son[1]].sum; }
+    void pushdown(int now)
+    {
+        if (tree[now].rev)
+        {
+            std::swap(tree[now].son[0], tree[now].son[1]);
+            tree[tree[now].son[0]].rev ^= true;
+            tree[tree[now].son[1]].rev ^= true;
+            tree[now].rev = false;
         }
     }
-    void pushup(const int &now) { g[now].sum = g[now].val ^ g[g[now].lson].sum ^ g[g[now].rson].sum; }
-    void connect(const int &Fa, const int &Son, const int &Which)
-    {
-        if (Fa && ~Which)
-            g[Fa].son[Which] = Son;
-        if (Son)
-            g[Son].fa = Fa;
-    }
-    int query_son(const int &now) const
-    {
-        return g[g[now].fa].lson == now || g[g[now].fa].rson == now ? g[g[now].fa].rson == now : -1;
-    }
-    void rotate(const int &now)
-    {
-        int Fa = g[now].fa;
-        bool Which = query_son(now);
-        connect(g[Fa].fa, now, query_son(Fa));
-        connect(Fa, g[now].son[!Which], Which);
-        connect(now, Fa, !Which);
-        pushup(Fa);
-    }
-    void init_splay(const int &now)
+    void init_splay(int now)
     {
         if (~query_son(now))
-            init_splay(g[now].fa);
+            init_splay(tree[now].fa);
         pushdown(now);
     }
-    void splay(const int &now)
+    int query_son(int now)
+    {
+        int fa = tree[now].fa, res = 2;
+        while (res--)
+            if (tree[fa].son[res] == now)
+                break;
+        return res;
+    }
+    void connect(int A, int B, int which)
+    {
+        if (A && ~which)
+            tree[A].son[which] = B;
+        if (B)
+            tree[B].fa = A;
+    }
+    void rotate(int now)
+    {
+        int fa = tree[now].fa;
+        bool nowg = query_son(now);
+        connect(tree[fa].fa, now, query_son(fa));
+        connect(fa, tree[now].son[!nowg], nowg);
+        connect(now, fa, !nowg);
+        pushup(fa);
+    }
+    void splay(int now)
     {
         init_splay(now);
-        while (~query_son(now))
-        {
-            if (query_son(g[now].fa) == query_son(now))
-                rotate(g[now].fa);
-            rotate(now);
-        }
-        pushup(now);
+        for (int fa = tree[now].fa; ~query_son(now); rotate(now), fa = tree[now].fa)
+            if (query_son(fa) == query_son(now))
+                rotate(fa);
     }
     void access(int now)
     {
-        for (int lst = 0; now; lst = now, now = g[now].fa)
+        for (int lst = 0; now; lst = now, now = tree[now].fa)
         {
             splay(now);
-            g[now].rson = lst;
+            tree[now].son[1] = lst;
             pushup(now);
         }
     }
-    void reverse(const int &now) { g[now].rev ^= true; }
-    void make_root(const int &now)
+    void reverse(int now) { tree[now].rev ^= true; }
+    void make_root(int now)
     {
-        assert(0 < now && now < g.size());
         access(now);
         splay(now);
         reverse(now);
@@ -112,121 +108,98 @@ private:
     {
         access(now);
         splay(now);
-        for (pushdown(now); g[now].lson; pushdown(now))
-            now = g[now].lson;
+        for (pushdown(now); tree[now].son[0]; pushdown(now))
+            now = tree[now].son[0];
         splay(now);
         return now;
     }
-    void split(const int &A, const int &B)
+    void split(int A, int B)
     {
         make_root(A);
         access(B);
         splay(B);
-#ifdef debug
-        assert(find_root(B) == A);
-#endif
     }
-#ifdef debug
-    void _visit(const int &now) const
-    {
-        if (!now)
-            return;
-        cout << g[now].fa << ' ' << now << ' ' << query_son(now) << endl;
-        _visit(g[now].lson);
-        _visit(g[now].rson);
-    }
-#endif
-
-public:
-    LCT() { g.push_back(node()); }
-    void add_node(const Type &Value = Type()) { g.push_back(Value); }
-    bool link(const int &A, const int &B)
+    bool link(int A, int B)
     {
         make_root(A);
-        if (find_root(B) == A)
+        int root = find_root(B);
+        if (A == root)
             return false;
-        access(B);
-        splay(B);
-        pushdown(A);
         make_root(B);
-        g[B].fa = A;
+        tree[B].fa = A;
+        access(B);
         return true;
     }
-    bool cut(const int &A, const int &B)
+    bool cut(int A, int B)
     {
         split(A, B);
-        splay(B);
-        if (g[B].lson != A || g[A].rson)
+        if (tree[B].son[0] != A || tree[A].son[1])
             return false;
-        g[A].fa = 0;
-        g[B].lson = 0;
+        tree[A].fa = tree[B].son[0] = 0;
         pushup(B);
         return true;
     }
-#ifdef debug
-    void visit(const int &now)
-    {
-        cout << "<visit>" << endl;
-        splay(now);
-        _visit(now);
-        cout << "</visit>" << endl;
-    }
-#endif
-    Type sum(const int &A, const int &B)
+    int sum(int A, int B)
     {
         split(A, B);
-        splay(A);
-        return g[A].sum;
+        // std::cout << clock() << std::endl;
+        // _visit();
+        pushup(B);
+        // for (int i = 1; i <= n; ++i)
+        //     std::cout << tree[i].sum << " \n"[i == n];
+        return tree[B].sum;
     }
-    void modify(int now, const Type &Value)
+    void modify(int pos, int val)
     {
-        splay(now);
-        g[now].val = Value;
-        for (pushup(now); ~query_son(now); pushup(now))
-            now = g[now].fa;
+        splay(pos);
+        tree[pos].val = val;
+        pushup(pos);
+    }
+    void _visit(int now = 0)
+    {
+        if (!now)
+        {
+            for (int i = 1; i <= n; ++i)
+                if (!~query_son(i))
+                    _visit(i);
+            return;
+        }
+        if (tree[now].son[0])
+            _visit(tree[now].son[0]);
+        if (tree[now].fa)
+            std::cout << "   " << tree[now].fa << ' ' << now << ' ' << query_son(now) << std::endl;
+        if (tree[now].son[1])
+            _visit(tree[now].son[1]);
     }
 };
 LCT<int> lct;
-int n, m;
 signed main()
 {
-    ios::sync_with_stdio(false);
-    cin >> n >> m;
-    for (int i = 0; i < n; ++i)
+    std::ios::sync_with_stdio(false);
+    std::cin >> n >> m;
+    for (int i = 1; i <= n; ++i)
     {
-        static int v;
-        cin >> v;
-        lct.add_node(v);
+        static int x;
+        std::cin >> x;
+        lct.modify(i, x);
     }
     for (int i = 1; i <= m; ++i)
     {
         static int opt, x, y;
-        cin >> opt >> x >> y;
+        std::cin >> opt >> x >> y;
         switch (opt)
         {
         case 0:
-            cout << lct.sum(x, y) << endl;
-#ifdef debug
-            lct.visit(x);
-#endif
+            std::cout << lct.sum(x, y) << std::endl;
             break;
         case 1:
             lct.link(x, y);
-#ifdef debug
-            lct.visit(x);
-#endif
             break;
         case 2:
             lct.cut(x, y);
-#ifdef debug
-            lct.visit(x);
-#endif
             break;
         case 3:
             lct.modify(x, y);
-#ifdef debug
-            lct.visit(x);
-#endif
             break;
         }
     }

@@ -24,13 +24,14 @@ signed main()
 {
     ios::sync_with_stdio(false);
 a:
-    // system("mkdata.exe > data.in");
+    system("mkdata.exe > data.in");
     int t = clock();
-    int back = system("P4516.exe < data.in > data.out");
+    int back = system("P3402.exe < data.in > data.out");
     if (back)
     {
         cout << "Runtime Error!" << endl;
-        return 0;
+        // return 0;
+        goto a;
     }
     cout << "use time:" << clock() - t << "ms" << endl;
     if (clock() - t > 1000)

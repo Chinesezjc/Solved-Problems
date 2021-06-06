@@ -1,203 +1,88 @@
-#include <bits/stdc++.h>
-#pragma GCC optimize("Ofast")
-#define ls (w * 2)
-#define rs (w * 2 + 1)
-#define mid ((l + r) / 2)
-#define debug 0
-using namespace std;
-const int N = 1e6 + 5;
-const int inf = 1e9 + 7;
-int cntcnt = 0;
-
-const int IN_BUF = 1 << 23, OUT_BUF = 1 << 23;
-inline char myGetchar()
+//This Code was made by Chinese_zjc_.
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <algorithm>
+#include <vector>
+#include <bitset>
+#include <cmath>
+#include <queue>
+#include <stack>
+#include <list>
+#include <string>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
+#include <map>
+#include <set>
+#include <ctime>
+// #define debug
+#define int long long
+#define double long double
+const double PI = acos(-1);
+const double eps = 0.0000000001;
+const int INF = 0x3fffffffffffffff;
+const int MOD = 998244353;
+int n, m, N, a[35], ipw[35][905], C[905][905], dp[1 << 10][905],
+    finv[905], fact[905], lowbit[1 << 10], popcount[1 << 10];
+int power(int A, int B)
 {
-#ifdef debug
-    return getchar();
-#endif
-    static char buf[IN_BUF], *ps = buf, *pt = buf;
-    if (ps == pt)
+    int res = 1;
+    while (B)
     {
-        ps = buf, pt = buf + fread(buf, 1, IN_BUF, stdin);
+        if (B & 1)
+            res = res * A % MOD;
+        B >>= 1;
+        A = A * A % MOD;
     }
-    return ps == pt ? EOF : *ps++;
+    return res;
 }
-inline void myPutchar(char x)
+signed main()
 {
-#ifdef debug
-    return (void)putchar(x);
-#endif
-    static char pbuf[OUT_BUF], *pp = pbuf;
-    struct _flusher
+    std::ios::sync_with_stdio(false);
+    std::cin >> n;
+    for (int i = 1; i <= n; ++i)
     {
-        ~_flusher()
-        {
-            fwrite(pbuf, 1, pp - pbuf, stdout);
-        }
-    };
-    static _flusher outputFlusher;
-    if (pp == pbuf + OUT_BUF)
-    {
-        fwrite(pbuf, 1, OUT_BUF, stdout);
-        pp = pbuf;
+        std::cin >> a[i];
+        m = std::max(a[i], m);
+        N += a[i];
     }
-    *pp++ = x;
-}
-inline int read()
-{
-    int s = 0;
-    char c = myGetchar(), lc = '+';
-    while (c < '0' || '9' < c)
-        lc = c, c = myGetchar();
-    while ('0' <= c && c <= '9')
-        s = s * 10 + c - '0', c = myGetchar();
-    return lc == '-' ? -s : s;
-}
-void write(int x)
-{
-    if (x < 0)
+    for (int i = 1, j, inv; i <= n; ++i)
+        for (ipw[i][0] = 1, inv = i == 1 ? 1 : (MOD - MOD / i) * ipw[MOD % i][1] % MOD, j = 1; j <= N; ++j)
+            ipw[i][j] = ipw[i][j - 1] * inv % MOD;
+    fact[0] = 1;
+    for (int i = 1; i <= N; ++i)
+        fact[i] = fact[i - 1] * i % MOD;
+    finv[N] = power(fact[N], MOD - 2);
+    for (int i = N; i; --i)
+        finv[i - 1] = finv[i] * i % MOD;
+    for (int i = 0; i <= N; ++i)
     {
-        myPutchar('-');
-        x = -x;
+        C[i][0] = 1;
+        for (int j = 1; j < i; ++j)
+            C[i][j] = (C[i - 1][j - 1] + C[i - 1][j]) % MOD;
+        C[i][i] = 1;
     }
-    if (x < 10)
-        myPutchar(x + '0');
-    else
+    for (int i = 0; i != n; ++i)
+        lowbit[1 << i] = i;
+    for (int i = 1; i != 1 << n; ++i)
+        lowbit[i] = lowbit[i & -i], popcount[i] = popcount[i & (i - 1)] + 1;
+    for (int i = 1; i <= n; ++i)
     {
-        write(x / 10);
-        myPutchar(x % 10 + '0');
+        memset(dp, 0, sizeof(dp));
+        dp[0][a[i] - 1] = 1;
+        for (int j = 1; j != 1 << n; ++j)
+            if (~j & 1 << i >> 1)
+                for (int l = 0; l < a[lowbit[j] + 1]; ++l)
+                    for (int k = l; k <= N; ++k)
+                        dp[j][k] = (dp[j][k] + dp[j & (j - 1)][k - l] * C[k][l]) % MOD;
+        int ans = 0;
+        for (int j = 0; j != 1 << n; ++j)
+            for (int k = 0, pop; k <= N; ++k)
+                std::cout << dp[j][k] << " \n"[k == N],
+                    pop = popcount[j], ans = (ans + (pop & 1 ? MOD - 1 : 1) * dp[j][k] % MOD * ipw[pop + 1][k + 1]) % MOD;
+        std::cout << ans << " \n"[i == n];
     }
-}
-void print(int x = -1, char c = '\n')
-{
-    write(x);
-    myPutchar(c);
-}
-inline int max(const int &a, const int &b)
-{
-    return a > b ? a : b;
-}
-struct piir
-{
-    int t, v;
-};
-template <typename T>
-struct Vector
-{
-    struct edge
-    {
-        int nxt;
-        T v;
-    } a[N * 3];
-    int head[N], cnt, tail[N];
-    void push_back(int u, T w)
-    {
-        a[++cnt].v = w;
-        a[tail[u]].nxt = cnt;
-        tail[u] = cnt;
-        if (head[u] == 0)
-            head[u] = cnt;
-    }
-};
-Vector<piir> c;
-Vector<int> q;
-int ans[N];
-struct LazyTag
-{
-    int Min, tot;
-    LazyTag() : Min(inf), tot(0) {}
-    inline bool operator==(const LazyTag &a) const
-    {
-        return Min == a.Min && tot == a.tot;
-    }
-} null;
-struct node
-{
-    int Max1, Max2, val;
-    LazyTag tag;
-    node() : Max1(inf), Max2(-inf), val(0) {}
-    inline void update(int x, int y)
-    {
-        if (x >= Max1)
-            return;
-        Max1 = x;
-        val += y;
-        if (x < tag.Min)
-        {
-            tag.Min = x;
-            tag.tot += y;
-        }
-    }
-} t[N * 4];
-inline void push_up(node &c, const node &a, const node &b)
-{
-    c.Max1 = max(a.Max1, b.Max1);
-    c.Max2 = a.Max1 == b.Max1
-                 ? max(a.Max2, b.Max2)
-                 : max(min(a.Max1, b.Max1), max(a.Max2, b.Max2));
-}
-inline void push_down(int w)
-{
-    if (t[w].tag == null)
-        return;
-    t[ls].update(t[w].tag.Min, t[w].tag.tot);
-    t[rs].update(t[w].tag.Min, t[w].tag.tot);
-    t[w].tag = null;
-}
-void change(int w, int l, int r, const int &L, const int &R, const int &x)
-{
-    ++cntcnt;
-    if (r < L || R < l || x >= t[w].Max1)
-        return;
-    if (L <= l && r <= R && t[w].Max2 < x)
-        return t[w].update(x, 1);
-    push_down(w);
-    change(ls, l, mid, L, R, x);
-    change(rs, mid + 1, r, L, R, x);
-    push_up(t[w], t[ls], t[rs]);
-}
-inline int query(int w, int l, int r, int x)
-{
-    while (l < r)
-    {
-        push_down(w);
-        if (x <= mid)
-            w = ls, r = mid;
-        else
-            w = rs, l = mid + 1;
-    }
-    return t[w].val;
-}
-
-signed main(signed Recall, char *_902_[])
-{
-    freopen("ex_a4.in", "r", stdin);
-    freopen("data.out", "w", stdout);
-    (void)Recall, (void)_902_;
-    memset(ans, 0, sizeof(ans));
-    int n = read(), Q = read();
-    for (int i = 1; i <= n; i++)
-        c.push_back(i, (piir){1, read()});
-    for (int i = 1; i <= Q; i++)
-    {
-        int opt = read(), x = read();
-        if (opt == 1)
-            c.push_back(x, (piir){i, read()});
-        else
-            q.push_back(x, i);
-    }
-    for (int i = 1; i <= n; i++)
-        c.push_back(i, (piir){Q + 1, 0});
-    for (int i = n; i >= 1; i--)
-    {
-        for (int j = c.head[i]; c.a[j].nxt; j = c.a[j].nxt)
-            change(1, 1, Q, c.a[j].v.t, c.a[c.a[j].nxt].v.t - 1, c.a[j].v.v);
-        for (int j = q.head[i]; j; j = q.a[j].nxt)
-            ans[q.a[j].v] = query(1, 1, Q, q.a[j].v);
-    }
-    for (int i = 1; i <= Q; i++)
-        if (ans[i])
-            print(ans[i]);
-    print(cntcnt);
     return 0;
 }

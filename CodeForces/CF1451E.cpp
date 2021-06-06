@@ -20,38 +20,49 @@
 const double PI = acos(-1);
 const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
-using namespace std;
-int a, b, c, d, e, num[10], ans;
+int n, x[1 << 16];
+std::vector<int> c[1 << 16];
 signed main()
 {
-    ios::sync_with_stdio(false);
-    cin >> num[1] >> num[2] >> num[3] >> num[4];
-    a = num[1] ^ num[2];
-    b = num[2] ^ num[3];
-    c = num[3] ^ num[4];
-    d = num[1] & num[2];
-    e = num[2] & num[3];
-    for (int i1 = 0; i1 <= 20; ++i1)
+    std::ios::sync_with_stdio(false);
+    std::cin >> n;
+    for (int i = 1; i != n; ++i)
     {
-        for (int i2 = 0; i2 <= 20; ++i2)
+        std::cout << "XOR " << 1 << ' ' << i + 1 << std::endl;
+        std::cin >> x[i];
+        c[x[i]].push_back(i);
+    }
+    c[0].push_back(0);
+    for (int i = 0; i != n; ++i)
+    {
+        if (c[i].size() >= 2)
         {
-            for (int i3 = 0; i3 <= 20; ++i3)
-            {
-                for (int i4 = 0; i4 <= 20; ++i4)
-                {
-                    if ((i1 ^ i2) == a &&
-                        (i2 ^ i3) == b &&
-                        (i3 ^ i4) == c &&
-                        (i1 & i2) == d &&
-                        (i2 & i3) == e)
-                    {
-                        cout << i1 << ' ' << i2 << ' ' << i3 << ' ' << i4 << endl;
-                        ++ans;
-                    }
-                }
-            }
+            static int z;
+            std::cout << "OR " << c[i][0] + 1 << ' ' << c[i][1] + 1 << std::endl;
+            std::cin >> z;
+            z ^= x[c[i][0]];
+            std::cout << '!';
+            for (int j = 0; j != n; ++j)
+                std::cout << ' ' << (z ^ x[j]);
+            std::cout << std::endl;
+            return 0;
         }
     }
-    cout << ans << endl;
+    int p[2] = {c[1][0], c[2][0]}, r[2];
+    std::cout << "AND " << 1 << ' ' << p[0] + 1 << std::endl;
+    std::cin >> r[0];
+    std::cout << "AND " << 1 << ' ' << p[1] + 1 << std::endl;
+    std::cin >> r[1];
+    for (int i = 0; i != n; ++i)
+    {
+        if ((i & (i ^ 1)) == r[0] && (i & (i ^ 2)) == r[1])
+        {
+            std::cout << '!';
+            for (int j = 0; j != n; ++j)
+                std::cout << ' ' << (x[j] ^ i);
+            std::cout << std::endl;
+            return 0;
+        }
+    }
     return 0;
 }

@@ -106,8 +106,6 @@ std::vector<std::pair<std::pair<int, int>, std::pair<int, int> /**/> /**/> solve
 }
 signed main()
 {
-    freopen("dish.in", "r", stdin);
-    freopen("dish.out", "w", stdout);
     std::ios::sync_with_stdio(false);
     static int T;
     std::cin >> T;

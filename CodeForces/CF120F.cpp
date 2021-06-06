@@ -28,8 +28,6 @@ queue<int> que;
 signed main()
 {
     ios::sync_with_stdio(false);
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
     cin >> n;
     for (int i = 1; i <= n; ++i)
     {

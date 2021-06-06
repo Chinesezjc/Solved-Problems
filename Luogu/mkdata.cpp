@@ -23,28 +23,26 @@
 using namespace std;
 unsigned int seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
-int n = 100, q = 50, fa[100005];
-map<int, map<int, bool>> d;
-int find(int now)
-{
-    return now == fa[now] ? now : fa[now] = find(fa[now]);
-}
+int n = 10, m = 10;
 signed main()
 {
     ios::sync_with_stdio(false);
-    cout << n << ' ' << q << endl;
-    for (int i = 0; i != n; ++i)
-        fa[i] = i;
-    for (int i = 1; i < n; ++i)
+    std::cout << n << ' ' << m << std::endl;
+    for (int i = 1; i <= m; ++i)
     {
-        int x = Rand() % n, y = Rand() % n;
-        while (find(x) == find(y))
+        int opt = Rand() % 3 + 1;
+        switch (opt)
         {
-            x = Rand() % n;
-            y = Rand() % n;
+        case 1:
+            std::cout << opt << ' ' << Rand() % n + 1 << " " << Rand() % n + 1 << std::endl;
+            break;
+        case 2:
+            std::cout << opt << ' ' << Rand() % i << std::endl;
+            break;
+        case 3:
+            std::cout << opt << ' ' << Rand() % n + 1 << ' ' << Rand() % n + 1 << std::endl;
+            break;
         }
-        fa[find(x)] = find(y);
-        cout << x + 1 << ' ' << y + 1 << endl;
     }
     return 0;
 }
