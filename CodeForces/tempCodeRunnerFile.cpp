@@ -1,1 +1,0 @@
-inlim ? lim[left] : 10

@@ -29,7 +29,7 @@ a:
     system("std.exe < data.in > data.ans");
     cout << "Running..." << endl;
     int t = clock();
-    int back = system("CF1131E < data.in > data.out");
+    int back = system("CF553D.exe < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;
