@@ -27,25 +27,12 @@ const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
 unsigned long long seed = std::chrono::system_clock::now().time_since_epoch().count() / 1000000;
 std::mt19937_64 Rand(seed);
-int n = 5, m = 10, q = 2;
-bool v[605][605];
+int n = 4;
 signed main()
 {
     std::ios::sync_with_stdio(false);
-    std::cout << n << ' ' << m << std::endl;
-    for (int i = 1; i <= n; ++i)
-        for (int j = 1; j < i; ++j)
-            std::cout << i << ' ' << j << ' ' << Rand() % 10 + 1 << std::endl;
-    std::cout << q << std::endl;
-    for (int i = 1; i <= q; ++i)
-    {
-        int a, b;
-        do
-        {
-            a = Rand() % n + 1, b = Rand() % n + 1;
-        } while (v[a][b] || a == b);
-        std::cout << a << ' ' << b << ' ' << Rand() % 20 + 1 << std::endl;
-        v[a][b] = v[b][a] = true;
-    }
+    std::cout << n << std::endl;
+    for (int i = 1; i < n; ++i)
+        std::cout << Rand() % i + 1 << ' ' << i + 1 << std::endl;
     return 0;
 }

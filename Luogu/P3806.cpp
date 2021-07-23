@@ -1,113 +1,87 @@
-//This Code was made by Chinese_zjc_.
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <algorithm>
-#include <vector>
-#include <bitset>
-#include <cmath>
-#include <queue>
-#include <stack>
-#include <list>
-#include <string>
-#include <cstring>
-#include <cstdio>
-#include <cstdlib>
-#include <cctype>
-#include <map>
-#include <set>
-#include <ctime>
+// This Code was made by Chinese_zjc_.
+#include <bits/stdc++.h>
 // #define debug
-#define int long long
-#define double long double
-const double PI = acos(-1);
-const double eps = 0.0000000001;
-const int INF = 0x3fffffffffffffff;
-int n, m, root, siz[10005], k[105], maxp[10005], d[10005], b[10005], rk[10005], tot;
-std::vector<std::pair<int, int>> to[10005];
-bool vis[10005], ans[105];
-void get_dis(int now, int fa, int dis, int from)
-{
-    rk[++tot] = now;
-    d[now] = dis;
-    b[now] = from;
-    for (int i = 0; i != (int)to[now].size(); ++i)
-    {
-        if (to[now][i].first == fa || vis[to[now][i].first])
-            continue;
-        get_dis(to[now][i].first, now, dis + to[now][i].second, from);
-    }
-}
-bool cmp(const int &A, const int &B)
-{
-    return d[A] < d[B];
-}
-void calc(int now)
-{
-    rk[tot = 0] = now;
-    d[now] = 0;
-    b[now] = now;
-    for (int i = 0; i != (int)to[now].size(); ++i)
-    {
-        if (vis[to[now][i].first])
-            continue;
-        get_dis(to[now][i].first, now, to[now][i].second, to[now][i].first);
-    }
-    std::sort(rk, rk + tot, cmp);
-    for (int i = 1; i <= m; ++i)
-    {
-        if (ans[i])
-            continue;
-        int l = 0, r = tot;
-        while (l < r)
-        {
-            if (d[rk[l]] + d[rk[r]] > k[i])
-                --r;
-            else if (d[rk[l]] + d[rk[r]] < k[i])
-                ++l;
-            else if (b[rk[l]] == b[rk[r]])
-            {
-                if (d[rk[r - 1]] == d[rk[r]])
-                    --r;
-                else
-                    ++l;
-            }
-            else
-            {
-                ans[i] = true;
-                break;
-            }
-        }
-    }
-}
-void get_root(int now, int fa, int size)
+// #define int long long
+// #define double long double
+const long double PI = acos(-1);
+const long double eps = 1e-10;
+#ifdef int
+const long long INF = LLONG_MAX >> 1;
+#else
+const int INF = INT_MAX >> 1;
+#endif
+int n, m, x[10005], y[10005], v[10005], k[105], siz[10005];
+std::vector<int> to[10005], cha;
+bool vis[10005], app[10000005], ans[105];
+void init_siz(int now, int from)
 {
     siz[now] = 1;
-    maxp[now] = 0;
-    for (int i = 0; i != (int)to[now].size(); ++i)
+    for (auto i : to[now])
     {
-        if (to[now][i].first == fa || vis[to[now][i].first])
+        int nxt = x[i] ^ y[i] ^ now;
+        if (i == from || vis[nxt])
             continue;
-        get_root(to[now][i].first, now, size);
-        siz[now] += siz[to[now][i].first];
-        maxp[now] = std::max(maxp[now], siz[to[now][i].first]);
+        init_siz(nxt, i);
+        siz[now] += siz[nxt];
     }
-    maxp[now] = std::max(maxp[now], size - siz[now]);
-    if (maxp[now] < maxp[root])
-        root = now;
+}
+int find_root(int now, int from, int tot)
+{
+    int max = 0;
+    for (auto i : to[now])
+    {
+        int nxt = x[i] ^ y[i] ^ now;
+        if (i == from || vis[nxt])
+            continue;
+        int res = find_root(nxt, i, tot);
+        if (res)
+            return res;
+        max = std::max(max, siz[nxt]);
+    }
+    return std::max(max, tot - siz[now]) <= tot / 2 ? now : 0;
+}
+template <class F>
+void dfs(int now, int from, int depth, F fun)
+{
+    if (depth >= 10000000)
+        return;
+    fun(depth);
+    for (auto i : to[now])
+    {
+        int nxt = x[i] ^ y[i] ^ now;
+        if (i == from || vis[nxt])
+            continue;
+        dfs(nxt, i, depth + v[i], fun);
+    }
 }
 void work(int now)
 {
-    vis[now] = true;
-    calc(now);
-    for (int i = 0; i != (int)to[now].size(); ++i)
+    init_siz(now, 0);
+    int root = find_root(now, 0, siz[now]);
+    vis[root] = true;
+    for (auto i : to[root])
+        if (!vis[x[i] ^ y[i] ^ root])
+        {
+            dfs(x[i] ^ y[i] ^ root, i, v[i], [&](const int &depth)
+                {
+                    for (int i = 0; i != m; ++i)
+                        if (depth <= k[i] && app[k[i] - depth])
+                            ans[i] = true;
+                });
+            dfs(x[i] ^ y[i] ^ root, i, v[i], [&](const int &depth)
+                {
+                    if (!app[depth])
+                        app[depth] = true, cha.push_back(depth);
+                });
+        }
+    while (!cha.empty())
     {
-        if (vis[to[now][i].first])
-            continue;
-        root = 0;
-        get_root(to[now][i].first, 0, siz[to[now][i].first]);
-        work(root);
+        app[cha.back()] = false;
+        cha.pop_back();
     }
+    for (auto i : to[root])
+        if (!vis[x[i] ^ y[i] ^ root])
+            work(x[i] ^ y[i] ^ root);
 }
 signed main()
 {
@@ -115,17 +89,15 @@ signed main()
     std::cin >> n >> m;
     for (int i = 1; i != n; ++i)
     {
-        static int a, b, c;
-        std::cin >> a >> b >> c;
-        to[a].push_back(std::make_pair(b, c));
-        to[b].push_back(std::make_pair(a, c));
+        std::cin >> x[i] >> y[i] >> v[i];
+        to[x[i]].push_back(i);
+        to[y[i]].push_back(i);
     }
-    for (int i = 1; i <= m; ++i)
+    for (int i = 0; i != m; ++i)
         std::cin >> k[i];
-    maxp[0] = n;
-    get_root(1, 0, n);
-    work(root);
-    for (int i = 1; i <= m; ++i)
+    app[0] = true;
+    work(1);
+    for (int i = 0; i != m; ++i)
         std::cout << (ans[i] ? "AYE" : "NAY") << std::endl;
     return 0;
 }

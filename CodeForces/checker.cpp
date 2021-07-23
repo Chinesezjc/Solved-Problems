@@ -25,11 +25,11 @@ signed main()
 {
     ios::sync_with_stdio(false);
 a:
-    // system("mkdata.exe > data.in");
+    system("mkdata.exe > data.in");
     system("std.exe < data.in > data.ans");
     cout << "Running..." << endl;
     int t = clock();
-    int back = system("CF1482F.exe < data.in > data.out");
+    int back = system("CF1458F.exe < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;

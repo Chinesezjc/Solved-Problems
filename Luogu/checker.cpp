@@ -26,7 +26,7 @@ signed main()
 a:
     system("mkdata.exe > data.in");
     int t = clock();
-    int back = system("P3402.exe < data.in > data.out");
+    int back = system("P5469.exe < data.in > data.out");
     if (back)
     {
         cout << "Runtime Error!" << endl;
@@ -34,7 +34,7 @@ a:
         goto a;
     }
     cout << "use time:" << clock() - t << "ms" << endl;
-    if (clock() - t > 1000)
+    if (clock() - t > 5000)
     {
         cout << "Time Limit Exceeded!" << endl;
         return 0;
