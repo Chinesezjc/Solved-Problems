@@ -1,163 +1,65 @@
 #include <bits/stdc++.h>
-#define ls (w * 2)
-#define rs (w * 2 + 1)
-#define mid ((l + r) / 2)
-#define ll long long
 using namespace std;
-const ll N = 1e6 + 5;
-const ll inf = 1ll << 60;
-
-inline int read()
+int n, len[200005], pos[200005], apos[200005], bpos[200005], a[200005], b[200005], colora[200005], colorb[200005];
+int tmp[200005], ans[200005], vis[200005];
+inline int nextpos(int x)
 {
-    int s = 0;
-    char c = getchar(), lc = '+';
-    while (c < '0' || '9' < c)
-        lc = c, c = getchar();
-    while ('0' <= c && c <= '9')
-        s = s * 10 + c - '0', c = getchar();
-    return lc == '-' ? -s : s;
+    if (x > n / 2)
+        return (x - n / 2) * 2;
+    return 2 * x - 1;
 }
-void write(ll x)
+int main()
 {
-    if (x < 0)
+    scanf("%d", &n);
+    while (scanf("%d", &n) != EOF)
     {
-        putchar('-');
-        x = -x;
-    }
-    if (x < 10)
-        putchar(x + '0');
-    else
-    {
-        write(x / 10);
-        putchar(x % 10 + '0');
-    }
-}
-void print(ll x = -1, char c = '\n')
-{
-    write(x);
-    putchar(c);
-}
-struct node
-{
-    int tot1;
-    ll sum, Max1, Max2, tag;
-    node()
-    {
-        tag = inf;
-        sum = tot1 = 0;
-        Max1 = Max2 = -inf;
-    }
-    node(ll x)
-    {
-        sum = Max1 = x;
-        Max2 = -inf;
-        tot1 = 1;
-        tag = inf;
-    }
-    void cover(ll x)
-    {
-        if (Max2 < x && x < Max1)
+        n *= 2;
+        for (int i = 0; i <= n; ++i)
+            ans[i] = vis[i] = 0;
+        for (int i = 1; i <= n; ++i)
         {
-            sum -= (Max1 - x) * tot1;
-            Max1 = x;
+            scanf("%d", &a[i]);
+            apos[a[i]] = i;
         }
-        tag = min(tag, x);
-    }
-} t[N * 3], null;
-inline ll max(const ll &x, const ll &y)
-{
-    return x > y ? x : y;
-}
-node operator+(const node &a, const node &b)
-{
-    node ret;
-    ret.sum = a.sum + b.sum;
-    if (a.Max1 > b.Max1)
-    {
-        ret.Max1 = a.Max1;
-        ret.tot1 = a.tot1;
-        ret.Max2 = max(a.Max2, b.Max1);
-    }
-    if (a.Max1 < b.Max1)
-    {
-        ret.Max1 = b.Max1;
-        ret.tot1 = b.tot1;
-        ret.Max2 = max(a.Max1, b.Max2);
-    }
-    if (a.Max1 == b.Max1)
-    {
-        ret.Max1 = a.Max1;
-        ret.tot1 = a.tot1 + b.tot1;
-        ret.Max2 = max(a.Max2, b.Max2);
-    }
-    return ret;
-}
-int a[N];
-void push_down(const int &w)
-{
-    if (t[w].tag == inf)
-        return;
-    t[ls].cover(t[w].tag);
-    t[rs].cover(t[w].tag);
-    t[w].tag = inf;
-}
-void build(const int &w, const int &l, const int &r)
-{
-    if (l == r)
-        return void(t[w] = node(a[l]));
-    build(ls, l, mid);
-    build(rs, mid + 1, r);
-    t[w] = t[ls] + t[rs];
-}
-void change(const int &w, const int &l, const int &r, const int &L, const int &R, const ll &x)
-{
-    if (r < L || R < l)
-        return;
-    if (L <= l && r <= R)
-    {
-        if (x >= t[w].Max1)
-            return;
-        if (t[w].Max2 < x && x < t[w].Max1)
-            return t[w].cover(x);
-    }
-    if (l < r)
-        push_down(w);
-    change(ls, l, mid, L, R, x);
-    change(rs, mid + 1, r, L, R, x);
-    t[w] = t[ls] + t[rs];
-}
-node query(const int &w, const int &l, const int &r, const int &L, const int &R)
-{
-    if (r < L || R < l)
-        return null;
-    if (L <= l && r <= R)
-        return t[w];
-    if (l < r)
-        push_down(w);
-    return query(ls, l, mid, L, R) + query(rs, mid + 1, r, L, R);
-}
-
-signed main(signed Recall, char *_902_[])
-{
-    (void)Recall, (void)_902_;
-    int T = read();
-    while (T--)
-    {
-        int n = read(), m = read();
-        for (int i = 1; i <= n; i++)
-            a[i] = read();
-        build(1, 1, n);
-        for (int i = 1; i <= m; i++)
+        for (int i = 1; i <= n; ++i)
         {
-            int opt = read(), l = read(), r = read();
-            if (opt == 0)
-                change(1, 1, n, l, r, read());
-            if (opt == 1)
-                print(query(1, 1, n, l, r).Max1);
-            if (opt == 2)
-                print(query(1, 1, n, l, r).sum);
+            scanf("%d", &b[i]);
+            bpos[b[i]] = i;
         }
+        for (int i = 1; i <= n; ++i)
+        {
+            if (!vis[i])
+            {
+                int cnt = 0;
+                int u = i;
+                while (!vis[u])
+                {
+                    vis[u] = 1;
+                    colora[a[u]] = i;
+                    colorb[b[u]] = i;
+                    tmp[++cnt] = a[u];
+                    pos[u] = cnt;
+                    u = nextpos(u);
+                }
+                for (int i = 1; i <= cnt; ++i)
+                    len[tmp[i]] = cnt;
+            }
+        }
+        for (int i = 1; i <= n; ++i)
+        {
+            if (colora[i] != colorb[i])
+                continue;
+            int p = pos[bpos[i]] - pos[apos[i]];
+            if (p < 0)
+                p += len[i];
+            for (int j = p; j <= n; j += len[i])
+                ++ans[j];
+        }
+        int ret = n;
+        for (int i = 0; i <= n; ++i)
+        {
+            ret = min(ret, i + n - ans[i]);
+        }
+        printf("%d\n", ret);
     }
-
-    return 0;
 }

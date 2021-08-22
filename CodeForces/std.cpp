@@ -1,55 +1,44 @@
-// This Code was made by Chinese_zjc_.
-#include <bits/stdc++.h>
-// #define debug
-const int MOD = 23333;
-int n, m;
-std::vector<int> operator*(const std::vector<int> &A, const std::vector<int> &B)
-{
-	std::vector<int> res(n + 1);
-	for (int i = 0; i != (int)A.size(); ++i)
-		for (int j = 0; j != (int)B.size(); ++j)
-			if (i + j <= n)
-				res[i + j] = (res[i + j] + A[i] * B[j]) % MOD;
-	return res;
+#include<iostream>
+#include<cstdio>
+#include<cmath>
+using namespace std;
+const int mod = 1e9 + 7;
+int lg[1030], n, m, k, a[20][20], f[20][20], v[20];
+
+int dfs(int x, int y) {
+    if(y == m + 1) x++, y = 1;
+    if(x == n + 1) return 1;
+    int s = f[x - 1][y] | f[x][y - 1], calc = -1, ret = 0;
+    int S = ~s & ((1 << k) - 1);
+    if(n + m - x - y + 1 > lg[S]) return 0;
+    for(int tmp = 0; tmp < k; tmp++) if(S & (1 << tmp)) {
+        if(a[x][y] == 0 || a[x][y] == tmp + 1) {
+            v[tmp + 1]++;
+            f[x][y] = s | (1 << tmp);
+            if(v[tmp + 1] == 1) {
+                if(calc == -1) calc = dfs(x, y + 1);
+                ret += calc;
+            }
+            else ret += dfs(x, y + 1);
+            v[tmp + 1]--;
+        }
+    }
+    return ret;
 }
-std::vector<int> operator+(const std::vector<int> &A, const std::vector<int> &B)
+
+int main()
 {
-	std::vector<int> res(n + 1);
-	for (int i = 0; i != (int)A.size(); ++i)
-		res[i] = (res[i] + A[i]) % MOD;
-	for (int i = 0; i != (int)B.size(); ++i)
-		res[i] = (res[i] + B[i]) % MOD;
-	return res;
-}
-std::vector<int> F;
-void print(const std::vector<int> &x)
-{
-	for (auto i : x)
-		std::cout << ' ' << i;
-	std::cout << std::endl;
-}
-std::vector<int> power(std::vector<int> A, int B)
-{
-	std::vector<int> res({1});
-	while (B)
-	{
-		if (B & 1)
-			res = res * A;
-		A = A * A;
-		B >>= 1;
-	}
-	return res;
-}
-signed main()
-{
-	std::ios::sync_with_stdio(false);
-	freopen("dishash.in", "r", stdin);
-	freopen("dishash.out", "w", stdout);
-	std::cin >> n >> m;
-	F = {1};
-	for (int i = 0; i != 300; ++i)
-		F = power(F, m) * std::vector<int>({0, 1}) + std::vector<int>({1});
-	// print(F);
-	std::cout << (F[n] + 1) % MOD << std::endl;
-	return 0;
+    for(int i = 1; i < 1024; i++) lg[i] = lg[i >> 1] + (i & 1);
+    scanf("%d %d %d", &n, &m, &k);
+    if(n + m - 1 > k) {
+        puts("0");
+        return 0;
+    }
+    for(int i = 1; i <= n; i++)
+        for(int j = 1; j <= m; j++) {
+            scanf("%d", &a[i][j]);
+            v[a[i][j]]++;
+        }
+    printf("%d\n", dfs(1, 1));
+    return 0;
 }

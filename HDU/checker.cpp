@@ -28,14 +28,14 @@ a:
     system("std.exe < data.in > data.ans");
     cout << "Running..." << endl;
     int t = clock();
-    int back = system("5306.exe < data.in > data.out");
+    int back = system("HDU6502.exe < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;
         return 0;
     }
     cout << "use time:" << clock() - t << "ms" << endl;
-    if (clock() - t > 2000)
+    if (clock() - t > 5000)
     {
         cout << "Time Limit Exceeded!" << endl;
         return 0;
