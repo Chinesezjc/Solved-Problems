@@ -1,72 +1,60 @@
 #include <iostream>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cmath>
-#include <algorithm>
+#include <cstdio>
+#define mod 1000000007
+
 using namespace std;
-long long n,p;
-struct zj{
-    long long a[5][5];
-    zj operator = (int k){
-        a[1][1]=1;
-        for (int i=1;i<=k;i++)
-        a[1][1]*=10;
-        a[1][1]%=p;
-        a[1][2]=0;
-        a[1][3]=0;
-        a[2][1]=1;
-        a[2][2]=1;
-        a[2][3]=0;
-        a[3][1]=1;
-        a[3][2]=1;
-        a[3][3]=1;
-        return *this;
-    }
-    zj operator * (zj b){
-        zj c;
-           for (int i=1;i<=3;i++)
-             for (int j=1;j<=3;j++){
-                 c.a[i][j]=0;
-                 for (int k=1;k<=3;k++){
-                    c.a[i][j]+=(a[i][k])%p*(b.a[k][j])%p;
-                    c.a[i][j]%=p;
-                }
-            }
-        return c;
-    }
-    zj operator ^ (long long x){
-        zj c,a;a=*this;
-           for(int i=1;i<=3;i++)
-            for(int j=1;j<=3;j++)
-                c.a[i][j]=(i==j);
-        for(;x;x>>=1){
-            if(x&1) c=c*a;
-               a=a*a;
-        }
-        return c;
-    }
-}A[20],B;
-long long pow10(int x){
-    long long out=1;
-    for (int i=1;i<=x;i++) out*=10;
-    return out;
+typedef long long ll;
+const int MAXN = 50;
+int f[MAXN];
+ll n, lcm[MAXN], cnt[10];
+inline ll gcd(ll a, ll b)
+{
+	return b ? gcd(b, a % b) : a;
 }
-int main(){
-    scanf("%lld%lld",&n,&p);
-    int k=0;long long nn=n;
-    while (nn) {k++;nn/=10;}
-    for (int i=1;i<k;i++){
-        A[i]=i;
-        A[i]=A[i]^(pow10(i-1)*9);
-    }
-    nn=n-pow10(k-1)+1;
-    A[k]=k;
-    A[k]=A[k]^nn;
-    for(int i=1;i<=3;i++)
-        for(int j=1;j<=3;j++)
-            B.a[i][j]=(i==j);
-    for (int i=1;i<=k;i++) B=B*A[i];
-    printf("%lld",B.a[3][1]);
-    return 0;
+inline ll calc(ll l, ll r, ll x)
+{
+	return r / x - (l - 1) / x;
+}
+inline ll qpow(ll a, ll b)
+{
+	ll res = 1;
+	for (; b; a = a * a % mod, b >>= 1ll)
+		if (b & 1ll)
+			res = res * a % mod;
+	return res;
+}
+
+int main()
+{
+	cin >> n;
+	f[2] = 1;
+	for (int i = 3; i <= 50; i++)
+		for (int j = 2; j < i; j++)
+			if (i % j)
+			{
+				f[i] = f[j] + 1;
+				break;
+			}
+	lcm[1] = 1;
+	int pos = 2;
+	for (pos = 2; pos <= 50; pos++)
+	{
+		lcm[pos] = lcm[pos - 1] * (pos / gcd(pos, lcm[pos - 1]));
+		if (lcm[pos] > n)
+			break;
+	}
+	for (int i = 2; i <= pos; i++)
+		std::cout << calc(1, n, lcm[i - 1]) - calc(1, n, lcm[i]) << std::endl,
+			cnt[f[i] + 1] += calc(1, n, lcm[i - 1]) - calc(1, n, lcm[i]);
+	--cnt[f[2] + 1];
+	--cnt[f[3] + 1];
+	for (int i = 1; i <= 5; ++i)
+		std::cout << cnt[i] << std::endl;
+	ll ans = 1;
+	for (int i = 2; i <= 5; i++)
+		ans = ans * qpow(i, cnt[i]) % mod;
+	cout << ans << endl;
+	return 0;
 }
