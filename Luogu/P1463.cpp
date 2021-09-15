@@ -32,7 +32,7 @@ void dfs(int t, int now, int sum)
     {
         return;
     }
-    for (int i = 0, j = 1; t * j <= n; ++i, j *= P[now])
+    for (int i = 0, j = 1; t <= n / j; ++i, j *= P[now])
     {
         dfs(t * j, now + 1, sum * (i + 1));
     }

@@ -76,6 +76,8 @@ void pushdown(int now)
         t[rson].max.t -= t[now].tag;
         t[lson].min.t -= t[now].tag;
         t[rson].min.t -= t[now].tag;
+        t[lson].tag += t[now].tag;
+        t[rson].tag += t[now].tag;
         t[now].tag = 0;
     }
 }
@@ -115,6 +117,7 @@ void add(int L, int R, int val, int now = 1, int l = 1, int r = n)
         update(now);
         return;
     }
+    pushdown(now);
     add(L, R, val, lson, l, lmid);
     add(L, R, val, rson, rmid, r);
     pushup(now);
@@ -123,6 +126,7 @@ long long query(int L, int R, int now = 1, int l = 1, int r = n)
 {
     if (R < l || r < L)
         return 0;
+    update(now);
     if (L <= l && r <= R)
         return std::max(t[now].max.a, -t[now].min.a);
     pushdown(now);
@@ -152,16 +156,10 @@ signed main()
         {
         case 1:
             std::cin >> y;
-            for (int i = dfn[x]; i <= r[x]; ++i)
-                a[idfn[i]] += y;
             add(dfn[x], r[x], y);
             break;
         case 2:
-            y = 0;
-            for (int i = dfn[x]; i <= r[x]; ++i)
-                y = std::max(y, std::abs(a[idfn[i]] * b[idfn[i]]));
-            std::cout << y << std::endl;
-            // std::cout << query(dfn[x], r[x]) << std::endl;
+            std::cout << query(dfn[x], r[x]) << std::endl;
             break;
         }
         // for (int j = 1; j <= n; ++j)

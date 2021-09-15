@@ -19,7 +19,7 @@
 #define int long long
 #define PI 3.14159265358979323
 #define INF 0x3fffffffffffffff
-int ans, out, ansflow, outflow;
+double out, ans;
 signed main()
 {
     std::ios::sync_with_stdio(false);
@@ -28,5 +28,5 @@ signed main()
     std::ifstream fans("data.ans");
     fout >> out;
     fans >> ans;
-    return ans > 5 || out == ans;
+    return std::abs(out - ans) < 1e-6;
 }
