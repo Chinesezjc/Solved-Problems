@@ -168,10 +168,8 @@ unsigned int work()
     // std::cout << l << ' ' << r << std::endl;
     // for (int i = 0; i != app.size(); ++i)
     //     std::cout << sum(0, i, 2) << " \n"[i + 1 == app.size()];
-    res += (sum(r, app.size(), 2) - (siz - cnt) * sum(r, app.size(), 1)) -
-           ((cnt + 1) * sum(0, l + 1, 1) - sum(0, l + 1, 2));
-    res += (sum(r, app.size(), 2) - (siz - cnt) * sum(r, app.size(), 1)) -
-           ((cnt + 1) * sum(0, l + 1, 1) - sum(0, l + 1, 2));
+    res += 2 * ((sum(r, app.size(), 2) - (siz - cnt) * sum(r, app.size(), 1)) -
+                ((cnt + 1) * sum(0, l + 1, 1) - sum(0, l + 1, 2)));
     if (cnt * 2 < siz - 1)
         res += sum(find_rk(cnt + 1), app.size(), 1) - sum(0, find_rk(cnt + 1), 1);
     // std::cout << find_rk(cnt) << ' ' << find_rk(siz - cnt - 1) << std::endl;
