@@ -1,4 +1,4 @@
-//This Code was made by Chinese_zjc_.
+// This Code was made by Chinese_zjc_.
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -30,15 +30,20 @@ const double eps = 0.0000000001;
 const int INF = 0x3fffffffffffffff;
 unsigned long long seed = chrono::system_clock::now().time_since_epoch().count() / 1000000;
 mt19937_64 Rand(seed);
-int n = 5000, m = 5;
+int n = 20000, m = 22;
+int T = 1;
+std::set<int> a;
 signed main()
 {
     ios::sync_with_stdio(false);
-    for (int i = 0; i != n; ++i)
-        std::cout << char(Rand() % 2 + 'a');
+    std::cout << T << std::endl;
+    std::cout << n << ' ' << m << std::endl;
+    a.insert(1);
+    a.insert(n);
+    while (a.size() < m)
+        a.insert(Rand() % n + 1);
+    for (auto i : a)
+        std::cout << i << ' ';
     std::cout << std::endl;
-    // for (int i = 0; i != m; ++i)
-    //     std::cout << char(Rand() % 2 + 'a');
-    // std::cout << std::endl;
     return 0;
 }

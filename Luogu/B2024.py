@@ -1,0 +1,5 @@
+a = float(input())
+print("%lf" % a)
+print("%.5lf" % a)
+print("%e" % a)
+print("%g" % a)
