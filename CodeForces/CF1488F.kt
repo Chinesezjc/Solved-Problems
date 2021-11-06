@@ -3,9 +3,9 @@ public class node(var sum:Long,var tag:Long)
 val read=Scanner(System.`in`)
 var n=0
 var m=0
-var ans=Array<Long>(200005,{i->0})
-var a=Array<Long>(200005,{i->0})
-var t=Array<node>(524293,{i->node(0,0)})
+var ans=Array<Long>(200005,{_->0})
+var a=Array<Long>(200005,{_->0})
+var t=Array<node>(524293,{_->node(0,0)})
 var top=0
 var sta=IntArray(200005)
 var lst=IntArray(200005)

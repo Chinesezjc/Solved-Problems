@@ -25,11 +25,11 @@ signed main()
 {
     ios::sync_with_stdio(false);
 a:
-    system("mkdata.exe > data.in");
-    system("std.exe < data.in > data.ans");
-    cout << "Running..." << endl;
+    system("./mkdata > data.in");
+    system("./std < data.in > data.ans");
+    cout << "Running..." << enb1b1dl;
     int t = clock();
-    int back = system("CF1580E.exe < data.in > data.out");
+    int back = system("./CF1580E < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;
@@ -41,7 +41,7 @@ a:
         cout << "Time Limit Exceeded!" << endl;
         return 0;
     }
-    if (!system("fc data.out data.ans"))
+    if (!system("diff data.out data.ans"))
     {
         std::cout << "OK" << std::endl;
         goto a;
