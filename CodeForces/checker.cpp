@@ -27,9 +27,9 @@ signed main()
 a:
     system("./mkdata > data.in");
     system("./std < data.in > data.ans");
-    cout << "Running..." << enb1b1dl;
+    cout << "Running..." << endl;
     int t = clock();
-    int back = system("./CF1580E < data.in > data.out");
+    int back = system("./CF1558E < data.in > data.out");
     if (back != 0)
     {
         cout << "Runtime Error!" << endl;
